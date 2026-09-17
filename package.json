@@ -1,0 +1,21 @@
+{
+  "name": "rsi-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A real, auditable recursive self-improvement loop that runs itself on GitHub Actions.",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "arena": "node arena/run.mjs --solver champion=agent/solver.js --out .tmp/scores.json",
+    "arena:quick": "node arena/run.mjs --solver champion=agent/solver.js --quick --out .tmp/scores.json",
+    "propose:mock": "node scripts/propose.mjs --out .tmp/candidate --mock",
+    "serve": "python3 -m http.server 8787 --directory docs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
+    "acorn": "^8.18.0"
+  }
+}

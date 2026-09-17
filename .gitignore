@@ -1,0 +1,7 @@
+node_modules/
+.tmp/
+candidate/
+out/
+*.cpuprofile
+.DS_Store
+.claude/

@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RSI Demo</title>
+<meta name="description" content="一个真实、可审计、持续运行的递归自我改进循环——每一代都是一个 commit。">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>♻️</text></svg>">
+<style>
+:root{color-scheme:light;--page:#f9f9f7;--surface:#fcfcfb;--ink:#0b0b0b;--ink2:#52514e;--muted:#898781;--grid:#e1e0d9;--axis:#c3c2b7;--border:rgba(11,11,11,.10);--s1:#2a78d6;--s2:#eb6834;--good:#0ca30c;--crit:#d03b3b;--warn:#fab219;--good-text:#006300;--wash-good:rgba(12,163,12,.12);--wash-crit:rgba(208,59,59,.12);--wash-s1:rgba(42,120,214,.10)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){color-scheme:dark;--page:#0d0d0d;--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--axis:#383835;--border:rgba(255,255,255,.10);--s1:#3987e5;--s2:#d95926;--good-text:#0ca30c;--wash-s1:rgba(57,135,229,.14)}}
+:root[data-theme=dark]{color-scheme:dark;--page:#0d0d0d;--surface:#1a1a19;--ink:#fff;--ink2:#c3c2b7;--muted:#898781;--grid:#2c2c2a;--axis:#383835;--border:rgba(255,255,255,.10);--s1:#3987e5;--s2:#d95926;--good-text:#0ca30c;--wash-s1:rgba(57,135,229,.14)}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--page);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 16px}
+header{padding:28px 0 8px}
+header h1{font-size:26px;margin:0;letter-spacing:-.01em;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+header p{margin:6px 0 0;color:var(--ink2);max-width:70ch}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.links{display:flex;gap:14px;flex-wrap:wrap;font-size:14px;color:var(--ink2);align-items:center}
+.links a{text-decoration:none;border-bottom:1px solid var(--axis)}
+.btn{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:5px 10px;cursor:pointer;color:var(--ink);font:inherit;font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:600;padding:3px 10px;border-radius:999px;border:1px solid var(--border);color:var(--ink2);background:var(--surface);letter-spacing:.02em}
+.pill .dot{width:8px;height:8px;border-radius:50%;background:var(--muted)}
+.pill.live .dot{background:var(--good)}.pill.stale .dot{background:var(--crit)}.pill.wait .dot{background:var(--warn)}
+main{padding-bottom:40px}
+section{margin-top:22px}
+h2{font-size:17px;margin:0 0 4px;letter-spacing:-.005em}
+.sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px}
+.hero{display:grid;grid-template-columns:minmax(220px,1.2fr) repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.hero .big{grid-row:span 2}
+.stat .label{font-size:13px;color:var(--ink2)}
+.stat .value{font-size:26px;font-weight:600;margin-top:2px;line-height:1.1}
+.stat .value.hero-fig{font-size:56px;letter-spacing:-.02em}
+.stat .delta{font-size:13px;margin-top:6px;color:var(--ink2)}
+.up{color:var(--good-text)}.down{color:var(--crit)}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{font:12px system-ui,-apple-system,"Segoe UI",sans-serif;fill:var(--muted)}
+.chart .tick{font-variant-numeric:tabular-nums}
+.chart .grid{stroke:var(--grid);stroke-width:1}
+.chart .axis{stroke:var(--axis);stroke-width:1}
+.chart .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.chart .hit{fill:transparent;cursor:pointer}
+.chart .lbl{fill:var(--ink2)}
+.chart .lbl.strong{fill:var(--ink);font-weight:600}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink2);margin:8px 0 4px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.sw{width:12px;height:12px;border-radius:50%;display:inline-block;border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border)}
+.sw.line{width:16px;height:2px;border-radius:1px;border:0;box-shadow:none}
+.sw.bar{border-radius:3px;border:0;box-shadow:none}
+.sw.hollow{background:transparent!important;border:2px solid var(--crit)}
+.grid2{display:grid;grid-template-columns:1fr;gap:16px}
+@media(min-width:900px){.grid2{grid-template-columns:1fr 1fr}}
+.tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--page);padding:8px 10px;border-radius:8px;font-size:12.5px;line-height:1.4;max-width:320px;z-index:10;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+.tip b{font-weight:600}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--grid);vertical-align:top}
+td:last-child{white-space:nowrap}
+th{color:var(--muted);font-weight:500;font-size:12.5px;white-space:nowrap}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tw{overflow:auto;-webkit-overflow-scrolling:touch}
+.tag{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:6px;border:1px solid var(--border);color:var(--ink2);white-space:nowrap}
+.tag.ok{color:var(--good-text);background:var(--wash-good);border-color:transparent}
+.tag.no{color:var(--crit);background:var(--wash-crit);border-color:transparent}
+.tag.l1{color:var(--s1);background:var(--wash-s1);border-color:transparent}
+.summ{color:var(--ink2);max-width:52ch}
+.summ .more{color:var(--muted);cursor:pointer;text-decoration:underline dotted}
+.timeline{display:flex;flex-direction:column;gap:14px}
+.tl{border-left:2px solid var(--grid);padding-left:14px;position:relative}
+.tl::before{content:"";position:absolute;left:-7px;top:6px;width:12px;height:12px;border-radius:50%;background:var(--s1);border:2px solid var(--surface);box-shadow:0 0 0 1px var(--border)}
+.tl h3{margin:0;font-size:15px}
+.tl .meta{font-size:13px;color:var(--muted);margin:2px 0 8px}
+details summary{cursor:pointer;color:var(--ink2);font-size:13.5px}
+pre.diff{margin:8px 0 0;padding:10px 12px;background:var(--page);border:1px solid var(--border);border-radius:8px;overflow:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-word}
+pre.diff .add{background:var(--wash-good);color:var(--good-text)}
+pre.diff .del{background:var(--wash-crit);color:var(--crit);text-decoration:line-through;text-decoration-color:rgba(208,59,59,.4)}
+pre.doc{margin:8px 0 0;padding:10px 12px;background:var(--page);border:1px solid var(--border);border-radius:8px;overflow:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:420px}
+.empty{color:var(--muted);font-style:italic;padding:8px 0}
+.crit6{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:10px}
+.crit6 div{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px}
+.crit6 b{display:block;margin-bottom:2px}
+.crit6 small{color:var(--muted)}
+footer{border-top:1px solid var(--grid);padding:22px 0 40px;color:var(--muted);font-size:13px}
+.err{color:var(--crit);padding:16px}
+.reason{color:var(--ink2);font-size:13px}
+.kbd{font:12px ui-monospace,Menlo,monospace;background:var(--page);border:1px solid var(--border);border-radius:5px;padding:1px 5px}
+</style>
+</head>
+<body>
+<header class="wrap">
+  <div class="top">
+    <div>
+      <h1>♻️ RSI Demo <span id="status" class="pill"><span class="dot"></span><span>加载中</span></span></h1>
+      <p>一个<strong>真实、可审计、持续运行</strong>的递归自我改进循环。基因组是仓库，引擎是 GitHub Actions，每一代都是一个 commit。改进器（<span class="kbd">agent/improver.md</span>）本身也在被改进。</p>
+    </div>
+    <div class="links">
+      <a id="repo-link" href="https://github.com/Yongcheng123/rsi_demo">GitHub</a>
+      <a id="actions-link" href="https://github.com/Yongcheng123/rsi_demo/actions/workflows/evolve.yml">Actions</a>
+      <a id="readme-link" href="https://github.com/Yongcheng123/rsi_demo#readme">README</a>
+      <button class="btn" id="theme" title="切换深浅色">☾</button>
+    </div>
+  </div>
+</header>
+<main class="wrap" id="app"><div class="empty">正在读取 history.json …</div></main>
+<footer class="wrap">
+  <div>数据源：<a href="history.json">history.json</a>（由 ③ ratchet 在每一代结束时追加，无论接受与否）。图表为原生 SVG，无第三方依赖。</div>
+</footer>
+<div id="tip" class="tip" hidden></div>
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtX = (x) => x == null ? '—' : (x >= 100 ? x.toFixed(0) : x >= 10 ? x.toFixed(1) : x.toFixed(2)) + '×';
+  const fmtPct = (d, plus = true) => d == null ? '—' : (plus && d >= 0 ? '+' : '') + (d * 100).toFixed(1) + '%';
+  const fmtUs = (us) => us == null ? '—' : us >= 1000 ? (us / 1000).toFixed(1) + ' ms' : us.toFixed(0) + ' µs';
+  const fmtMoney = (x) => x == null ? '—' : '$' + (x >= 10 ? x.toFixed(2) : x.toFixed(3));
+  const fmtInt = (n) => n == null ? '—' : n.toLocaleString('en-US');
+  const fmtDate = (ts) => { const d = new Date(ts); return isNaN(d) ? '—' : d.toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false }); };
+  const ago = (ts) => { const s = (Date.now() - Date.parse(ts)) / 1000; if (!(s >= 0)) return '—'; if (s < 3600) return Math.round(s / 60) + ' 分钟前'; if (s < 86400) return (s / 3600).toFixed(1) + ' 小时前'; return (s / 86400).toFixed(1) + ' 天前'; };
+  const champOf = (g) => g.accepted ? g.candidate : g.champion_measured;
+
+  // ---------- theme
+  const themeBtn = $('#theme');
+  const applyTheme = () => { const t = localStorage.getItem('theme'); if (t) document.documentElement.dataset.theme = t; else delete document.documentElement.dataset.theme; const dark = document.documentElement.dataset.theme === 'dark' || (!t && matchMedia('(prefers-color-scheme: dark)').matches); themeBtn.textContent = dark ? '☀' : '☾'; };
+  themeBtn.onclick = () => { const dark = document.documentElement.dataset.theme === 'dark' || (!localStorage.getItem('theme') && matchMedia('(prefers-color-scheme: dark)').matches); localStorage.setItem('theme', dark ? 'light' : 'dark'); applyTheme(); };
+  applyTheme();
+
+  // ---------- tooltip
+  const tip = $('#tip');
+  let tipOn = false;
+  document.addEventListener('mousemove', (e) => { if (!tipOn) return; const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = Math.min(e.clientY + 14, innerHeight - tip.offsetHeight - 8); tip.style.left = x + 'px'; tip.style.top = y + 'px'; });
+  function bindTips(root) {
+    root.querySelectorAll('[data-tip]').forEach((el) => {
+      el.addEventListener('mouseenter', () => { tip.innerHTML = el.dataset.tip; tip.hidden = false; tipOn = true; });
+      el.addEventListener('mouseleave', () => { tip.hidden = true; tipOn = false; });
+    });
+  }
+
+  // ---------- scales
+  const CW = () => (innerWidth < 640 ? 560 : 900); // viewBox width: narrower on phones so 12px text stays ≥ 8px
+  const logTicks = (lo, hi) => [0.1, 0.2, 0.5, 1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000].filter((t) => t >= lo && t <= hi);
+  function niceTicks(lo, hi, n = 5) { const span = hi - lo || 1; const raw = span / n; const p = Math.pow(10, Math.floor(Math.log10(raw))); const step = [1, 2, 2.5, 5, 10].map((m) => m * p).find((s) => span / s <= n) || p * 10; const out = []; for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) out.push(+v.toFixed(6)); return out; }
+
+  // ---------- chart A: score over generations (log y)
+  function chartScore(gens) {
+    const W = CW(), H = 320, L = 52, R = 16, T = 16, B = 34;
+    const pts = gens.map((g) => ({ g, champ: champOf(g)?.score ?? null, cand: g.gen > 0 ? (g.candidate?.score ?? null) : null }));
+    const vals = pts.flatMap((p) => [p.champ, p.cand]).filter((v) => v > 0);
+    let lo = Math.min(1, ...vals) / 1.25, hi = Math.max(1.6, ...vals) * 1.25;
+    const xs = (i) => L + (pts.length === 1 ? (W - L - R) / 2 : (i / (pts.length - 1)) * (W - L - R));
+    const ys = (v) => T + (1 - (Math.log10(v) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (H - T - B);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="冠军分数随代数变化">`;
+    for (const t of logTicks(lo, hi)) s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${ys(t)}" y2="${ys(t)}"/><text class="tick" x="${L - 8}" y="${ys(t) + 4}" text-anchor="end">${t}×</text>`;
+    s += `<line class="axis" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+    const every = Math.max(1, Math.ceil(pts.length / 16));
+    pts.forEach((p, i) => { if (i % every === 0 || i === pts.length - 1) s += `<text class="tick" x="${xs(i)}" y="${H - B + 18}" text-anchor="middle">${p.g.gen}</text>`; });
+    s += `<text class="lbl" x="${W - R}" y="${H - 4}" text-anchor="end">代 (generation)</text>`;
+    const path = pts.map((p, i) => p.champ > 0 ? `${i ? 'L' : 'M'}${xs(i).toFixed(1)},${ys(p.champ).toFixed(1)}` : '').join('');
+    s += `<path class="line" d="${path}" style="stroke:var(--s1)"/>`;
+    pts.forEach((p, i) => {
+      if (p.champ > 0) s += `<circle cx="${xs(i)}" cy="${ys(p.champ)}" r="4" style="fill:var(--s1);stroke:var(--surface);stroke-width:2"/>`;
+      if (p.g.gen > 0) {
+        const ok = p.g.accepted, incorrect = !(p.cand > 0);
+        const cy = incorrect ? ys(lo) - 2 : ys(p.cand);
+        const style = ok ? 'fill:var(--good);stroke:var(--surface);stroke-width:2' : incorrect ? 'fill:var(--surface);stroke:var(--crit);stroke-width:2' : 'fill:var(--crit);stroke:var(--surface);stroke-width:2';
+        s += `<circle cx="${xs(i)}" cy="${cy}" r="4.5" style="${style}"/>`;
+      }
+      const t = `<b>第 ${p.g.gen} 代</b> · ${esc(p.g.type)}${p.g.gen > 0 ? (p.g.accepted ? ' · <b>接受</b>' : ' · 拒绝') : ''}<br>冠军（本次实测）${fmtX(p.champ)}${p.g.gen > 0 ? `<br>候选 ${p.cand > 0 ? fmtX(p.cand) : '0（不正确 / 违规）'}` : ''}${p.g.gen > 0 && p.g.delta != null ? `<br>Δ ${fmtPct(p.g.delta)}` : ''}<br><span style="opacity:.75">${esc((p.g.reason || '').slice(0, 140))}</span>`;
+      s += `<rect class="hit" x="${xs(i) - Math.max(6, (W - L - R) / pts.length / 2)}" y="${T}" width="${Math.max(12, (W - L - R) / pts.length)}" height="${H - T - B}" data-tip="${esc(t)}"/>`;
+    });
+    if (pts.length) { const lastP = pts[pts.length - 1]; if (lastP.champ > 0) s += `<text class="lbl strong" x="${xs(pts.length - 1) - 8}" y="${ys(lastP.champ) - 10}" text-anchor="end">${fmtX(lastP.champ)}</text>`; }
+    s += '</svg>';
+    return s;
+  }
+
+  // ---------- chart B: Δ per generation (bars)
+  function chartDelta(real, margin) {
+    const W = CW(), H = 240, L = 52, R = 16, T = 16, B = 34;
+    if (!real.length) return '<div class="empty">还没有第 1 代。</div>';
+    const ds = real.map((g) => (g.delta == null ? 0 : g.delta * 100));
+    const lo = Math.min(-5, ...ds) * 1.15, hi = Math.max(margin * 100 * 2, ...ds) * 1.15;
+    const band = (W - L - R) / real.length, bw = Math.min(24, band * 0.7);
+    const xs = (i) => L + band * i + band / 2;
+    const ys = (v) => T + (1 - (v - lo) / (hi - lo)) * (H - T - B);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="每代改进幅度">`;
+    for (const t of niceTicks(lo, hi, 5)) s += `<line class="grid" x1="${L}" x2="${W - R}" y1="${ys(t)}" y2="${ys(t)}"/><text class="tick" x="${L - 8}" y="${ys(t) + 4}" text-anchor="end">${t > 0 ? '+' : ''}${t}%</text>`;
+    s += `<line class="axis" x1="${L}" x2="${W - R}" y1="${ys(0)}" y2="${ys(0)}"/>`;
+    s += `<line x1="${L}" x2="${W - R}" y1="${ys(margin * 100)}" y2="${ys(margin * 100)}" style="stroke:var(--muted);stroke-width:1;stroke-dasharray:3 4"/><text class="lbl" x="${W - R}" y="${ys(margin * 100) - 5}" text-anchor="end">接受阈值 +${(margin * 100).toFixed(0)}%</text>`;
+    real.forEach((g, i) => {
+      const v = ds[i], y0 = ys(0), y1 = ys(v), top = Math.min(y0, y1), h = Math.max(1.5, Math.abs(y1 - y0));
+      const incorrect = g.delta == null;
+      const color = g.accepted ? 'var(--good)' : incorrect ? 'var(--muted)' : 'var(--crit)';
+      const r = 4, x = xs(i) - bw / 2;
+      const d = v >= 0 ? `M${x},${y0} v${-(h - r)} a${r},${r} 0 0 1 ${r},${-r} h${bw - 2 * r} a${r},${r} 0 0 1 ${r},${r} v${h - r} z` : `M${x},${y0} v${h - r} a${r},${r} 0 0 0 ${r},${r} h${bw - 2 * r} a${r},${r} 0 0 0 ${r},${-r} v${-(h - r)} z`;
+      s += `<path d="${d}" style="fill:${color};opacity:${g.accepted ? 1 : .8}"/>`;
+      if (incorrect) s += `<text class="tick" x="${xs(i)}" y="${y0 - 6}" text-anchor="middle" style="fill:var(--crit)">✕</text>`;
+      const t = `<b>第 ${g.gen} 代</b> · ${esc(g.type)} · ${g.accepted ? '<b>接受</b>' : '拒绝'}<br>Δ ${incorrect ? '— （不正确 / 违规，记 0）' : fmtPct(g.delta)}<br><span style="opacity:.75">${esc((g.reason || '').slice(0, 140))}</span>`;
+      s += `<rect class="hit" x="${L + band * i}" y="${T}" width="${band}" height="${H - T - B}" data-tip="${esc(t)}"/>`;
+      if (real.length <= 40 || i % Math.ceil(real.length / 20) === 0) s += `<text class="tick" x="${xs(i)}" y="${H - B + 18}" text-anchor="middle">${g.gen}</text>`;
+    });
+    s += `<text class="lbl" x="${W - R}" y="${H - 4}" text-anchor="end">代 (generation)</text></svg>`;
+    return s;
+  }
+
+  // ---------- chart C: per-task speedups (horizontal bars, log x, two series)
+  function chartTasks(tasks) {
+    const names = Object.keys(tasks || {});
+    if (!names.length) return '<div class="empty">尚无任务级数据。</div>';
+    const W = CW(), L = W < 700 ? 104 : 132, R = 64, T = 10, rowH = 40, H = T + names.length * rowH + 30;
+    const vals = names.flatMap((n) => [tasks[n].speedup, tasks[n].speedup_train]).filter((v) => v > 0);
+    const lo = Math.min(0.5, ...vals) / 1.2, hi = Math.max(2, ...vals) * 1.4;
+    const xs = (v) => L + ((Math.log10(Math.max(v, lo)) - Math.log10(lo)) / (Math.log10(hi) - Math.log10(lo))) * (W - L - R);
+    let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="当前冠军各任务加速比">`;
+    for (const t of logTicks(lo, hi)) s += `<line class="grid" x1="${xs(t)}" x2="${xs(t)}" y1="${T}" y2="${H - 30}"/><text class="tick" x="${xs(t)}" y="${H - 12}" text-anchor="middle">${t}×</text>`;
+    s += `<line class="axis" x1="${xs(1)}" x2="${xs(1)}" y1="${T}" y2="${H - 30}" style="stroke:var(--ink2)"/>`;
+    names.forEach((n, i) => {
+      const e = tasks[n], y = T + i * rowH;
+      s += `<text class="lbl" x="${L - 10}" y="${y + 24}" text-anchor="end">${esc(n)}</text>`;
+      const bar = (v, yy, color, label) => {
+        if (!(v > 0)) return `<text class="tick" x="${xs(1) + 6}" y="${yy + 10}" style="fill:var(--crit)">${label} FAIL</text>`;
+        const x0 = xs(Math.min(1, v)), x1 = xs(Math.max(1, v)), w = Math.max(2, x1 - x0), r = Math.min(4, w / 2);
+        const right = v >= 1;
+        const d = right ? `M${x0},${yy} h${w - r} a${r},${r} 0 0 1 ${r},${r} v${12 - 2 * r} a${r},${r} 0 0 1 ${-r},${r} h${-(w - r)} z` : `M${x1},${yy} h${-(w - r)} a${r},${r} 0 0 0 ${-r},${r} v${12 - 2 * r} a${r},${r} 0 0 0 ${r},${r} h${w - r} z`;
+        return `<path d="${d}" style="fill:${color}"/><text class="tick lbl" x="${(right ? x1 : x0) + (right ? 6 : -6)}" y="${yy + 10}" text-anchor="${right ? 'start' : 'end'}">${fmtX(v)}</text>`;
+      };
+      s += bar(e.speedup, y + 6, 'var(--s1)', 'holdout') + bar(e.speedup_train, y + 20, 'var(--s2)', 'train');
+      const t = `<b>${esc(n)}</b><br>holdout ${fmtX(e.speedup)} · train ${fmtX(e.speedup_train)}<br>每次调用：基线 ${fmtUs(e.base_us)} → 当前 ${fmtUs(e.us)}${e.correct === false ? '<br><span style="color:var(--crit)">不正确</span>' : ''}`;
+      s += `<rect class="hit" x="0" y="${y}" width="${W}" height="${rowH}" data-tip="${esc(t)}"/>`;
+    });
+    s += '</svg>';
+    return s;
+  }
+
+  // ---------- diff (LCS on lines)
+  function diffLines(a, b) {
+    const A = a.split('\n'), Bl = b.split('\n'), n = A.length, m = Bl.length;
+    const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+    for (let i = n - 1; i >= 0; i--) for (let j = m - 1; j >= 0; j--) dp[i][j] = A[i] === Bl[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+    const out = []; let i = 0, j = 0;
+    while (i < n && j < m) { if (A[i] === Bl[j]) { out.push([' ', A[i]]); i++; j++; } else if (dp[i + 1][j] >= dp[i][j + 1]) out.push(['-', A[i++]]); else out.push(['+', Bl[j++]]); }
+    while (i < n) out.push(['-', A[i++]]); while (j < m) out.push(['+', Bl[j++]]);
+    return out;
+  }
+  function renderDiff(a, b) {
+    const ops = diffLines(a, b);
+    let html = '', ctx = 0;
+    const changed = new Set(ops.map((o, k) => (o[0] !== ' ' ? k : -1)).filter((k) => k >= 0));
+    const keep = new Set(); changed.forEach((k) => { for (let d = -3; d <= 3; d++) keep.add(k + d); });
+    let skipping = false;
+    ops.forEach((o, k) => {
+      if (!keep.has(k)) { if (!skipping) { html += '<span style="color:var(--muted)">  ⋯</span>\n'; skipping = true; } return; }
+      skipping = false;
+      const cls = o[0] === '+' ? 'add' : o[0] === '-' ? 'del' : '';
+      html += `<span class="${cls}">${o[0]} ${esc(o[1])}</span>\n`;
+    });
+    const plus = ops.filter((o) => o[0] === '+').length, minus = ops.filter((o) => o[0] === '-').length;
+    return { html, plus, minus };
+  }
+
+  // ---------- render
+  function render(h) {
+    const gens = h.generations || [];
+    const real = gens.filter((g) => g.gen > 0);
+    const last = gens[gens.length - 1];
+    const champ = last ? champOf(last) : null;
+    const accepted = real.filter((g) => g.accepted);
+    const improverGens = gens.filter((g) => g.improver_changed && g.improver_md);
+    const cost = real.reduce((s, g) => s + (g.usage?.cost_usd || 0), 0);
+    const tokens = real.reduce((s, g) => s + (g.usage?.input_tokens || 0) + (g.usage?.output_tokens || 0), 0);
+    const margin = 0.05;
+    const lastAccepted = accepted[accepted.length - 1];
+    const repo = h.repo || 'Yongcheng123/rsi_demo';
+    if (h.repo) { $('#repo-link').href = `https://github.com/${repo}`; $('#actions-link').href = `https://github.com/${repo}/actions/workflows/evolve.yml`; $('#readme-link').href = `https://github.com/${repo}#readme`; }
+
+    // status pill
+    const st = $('#status'); const age = last ? (Date.now() - Date.parse(last.ts)) / 3600000 : Infinity;
+    st.className = 'pill ' + (age < 8 ? 'live' : age < 30 ? 'wait' : 'stale');
+    st.lastElementChild.textContent = age < 8 ? `运行中 · 上一代 ${ago(last.ts)}` : age < 30 ? `等待下一代 · 上一代 ${ago(last.ts)}` : last ? `已停滞 · 上一代 ${ago(last.ts)}` : '无数据';
+
+    const critBlock = `
+      <div class="crit6">
+        <div><b>① 改的是自己的源码</b><small>基因组 = 被 commit 的 <span class="kbd">agent/</span> 目录，不是外部超参数。</small></div>
+        <div><b>② 改进器本身在被改进</b><small>L1 代重写 <span class="kbd">improver.md</span>，再用新改进器产出 solver，二者同生同死。</small></div>
+        <div><b>③ 评估它改不了</b><small>裁判在 <span class="kbd">arena/</span>，solver 在无网络、无密钥的 vm 沙箱 + 容器里跑；输入每次现场生成。</small></div>
+        <div><b>④ 接受准则是硬的</b><small>同一次运行内配对重测冠军，候选必须在隐藏输入上正确且 &gt; +${(margin * 100).toFixed(0)}%。</small></div>
+        <div><b>⑤ 全程可审计</b><small>每一代一个 commit；<span class="kbd">git log -p agent/improver.md</span> 就是它改写自己的编年史。</small></div>
+        <div><b>⑥ 无人干预持续运行</b><small>cron 每 6 小时一代；<span class="kbd">PAUSED</span> 文件是刹车，日预算是限速。</small></div>
+      </div>`;
+
+    let html = `
+    <section class="hero">
+      <div class="card stat big"><div class="label">当前冠军 · 相对冻结基线的几何平均加速比（holdout）</div><div class="value hero-fig">${fmtX(champ?.score)}</div>
+        <div class="delta">${lastAccepted ? `最近一次接受：第 ${lastAccepted.gen} 代 <span class="up">${fmtPct(lastAccepted.delta)}</span> · ${ago(lastAccepted.ts)}` : '尚未有被接受的改进'}${champ?.score_train ? ` · train ${fmtX(champ.score_train)}` : ''}</div></div>
+      <div class="card stat"><div class="label">代数</div><div class="value">${real.length}</div><div class="delta">${last ? `上一代 ${ago(last.ts)}` : ''}</div></div>
+      <div class="card stat"><div class="label">接受 / 拒绝</div><div class="value">${accepted.length} <span style="color:var(--muted);font-size:18px">/ ${real.length - accepted.length}</span></div><div class="delta">${real.length ? Math.round((100 * accepted.length) / real.length) + '% 接受率' : '—'}</div></div>
+      <div class="card stat"><div class="label">改进器被重写</div><div class="value">${improverGens.filter((g) => g.gen > 0).length}</div><div class="delta">L1 代被接受的次数</div></div>
+      <div class="card stat"><div class="label">累计花费</div><div class="value">${fmtMoney(cost)}</div><div class="delta">${fmtInt(tokens)} tokens</div></div>
+      <div class="card stat"><div class="label">本次测量噪声</div><div class="value">${last?.noise_pct != null ? '≤ ' + last.noise_pct.toFixed(1) + '%' : '—'}</div><div class="delta">批次间配对比值的最大偏差</div></div>
+    </section>
+
+    <section><h2>分数曲线</h2><p class="sub">蓝线：每一代运行时<strong>重新实测</strong>的冠军分数（所以有噪声抖动）；圆点：该代候选的分数。对数坐标。</p>
+      <div class="card">${chartScore(gens)}
+      <div class="legend"><span><i class="sw line" style="background:var(--s1)"></i>冠军（本次实测）</span><span><i class="sw" style="background:var(--good)"></i>候选 · 接受</span><span><i class="sw" style="background:var(--crit)"></i>候选 · 拒绝</span><span><i class="sw hollow"></i>候选 · 不正确/违规（记 0）</span></div></div>
+    </section>
+
+    <section class="grid2">
+      <div><h2>每代改进幅度 Δ</h2><p class="sub">候选相对当代冠军的提升。这条曲线的<strong>衰减形状</strong>是本项目真正的实验结果。</p>
+        <div class="card">${chartDelta(real, margin)}
+        <div class="legend"><span><i class="sw bar" style="background:var(--good)"></i>接受</span><span><i class="sw bar" style="background:var(--crit)"></i>拒绝（未过阈值 / 变差）</span><span><i class="sw bar" style="background:var(--muted)"></i>不正确 / 违规</span></div></div></div>
+      <div><h2>当前冠军 · 各任务加速比</h2><p class="sub">holdout 用每次运行的新种子和不同分布；train 固定种子。两条之间的差距就是过拟合。</p>
+        <div class="card">${chartTasks(champ?.tasks)}
+        <div class="legend"><span><i class="sw bar" style="background:var(--s1)"></i>holdout（决定接受）</span><span><i class="sw bar" style="background:var(--s2)"></i>train（给 agent 看的反馈）</span></div></div></div>
+    </section>
+
+    <section><h2>★ 改进器改写自己</h2><p class="sub"><span class="kbd">agent/improver.md</span> 是"如何改进 solver"的策略文档，它本身是基因组的一部分。下面是每一次被接受的重写及其 diff——这是整个项目最值得读的一屏。</p>
+      <div class="card timeline">${improverGens.length ? improverGens.map((g, i) => {
+        const prev = i > 0 ? improverGens[i - 1].improver_md : null;
+        const d = prev ? renderDiff(prev, g.improver_md) : null;
+        return `<div class="tl"><h3>第 ${g.gen} 代 ${g.gen === 0 ? '· 人写的 v0' : `· <span class="tag l1">L1</span> 模型重写`}</h3>
+          <div class="meta">${fmtDate(g.ts)}${d ? ` · <span class="up">+${d.plus}</span> / <span class="down">−${d.minus}</span> 行` : ''}${g.summary ? ` · ${esc(g.summary.slice(0, 160))}` : ''}</div>
+          <details${i === improverGens.length - 1 ? ' open' : ''}><summary>${d ? '查看 diff' : '查看全文'}</summary>${d ? `<pre class="diff">${d.html}</pre>` : `<pre class="doc">${esc(g.improver_md)}</pre>`}</details></div>`;
+      }).join('') : '<div class="empty">尚无改进器版本。</div>'}</div>
+    </section>
+
+    <section><h2>拒绝日志 · 作弊未遂与失败</h2><p class="sub">守卫违规和正确性失败单列——它们是 reward hacking 的一手记录，不是要藏起来的 bug。</p>
+      <div class="card tw">${(() => {
+        const rej = real.filter((g) => !g.accepted).slice().reverse();
+        if (!rej.length) return '<div class="empty">还没有被拒绝的候选。</div>';
+        return `<table><thead><tr><th>代</th><th>类型</th><th>原因</th><th class="num">候选</th><th class="num">冠军</th><th>细节</th></tr></thead><tbody>${rej.map((g) => {
+          const kind = /guard violation/.test(g.reason) ? ['守卫违规', 'no'] : /incorrect/.test(g.reason) ? ['不正确', 'no'] : /proposal failed|arena error/.test(g.reason) ? ['流程失败', ''] : ['未过阈值', ''];
+          const det = [...(g.candidate?.violations || []), ...(g.candidate?.failures || [])].slice(0, 4);
+          return `<tr><td class="num">${g.gen}</td><td><span class="tag ${g.type === 'L1' ? 'l1' : ''}">${esc(g.type)}</span></td><td><span class="tag ${kind[1]}">${kind[0]}</span><div class="reason">${esc(g.reason)}</div></td><td class="num">${fmtX(g.candidate?.score)}</td><td class="num">${fmtX(g.champion_measured?.score)}</td><td class="reason">${det.map((x) => esc(x)).join('<br>') || '—'}</td></tr>`;
+        }).join('')}</tbody></table>`;
+      })()}</div>
+    </section>
+
+    <section><h2>全部代际</h2><p class="sub">最新在前。点击说明可展开 agent 自己写的总结。</p>
+      <div class="card tw"><table><thead><tr><th>代</th><th>时间</th><th>类型</th><th>结果</th><th class="num">候选</th><th class="num">冠军</th><th class="num">Δ</th><th class="num">tokens</th><th class="num">$</th><th>说明</th><th>运行</th></tr></thead><tbody>${gens.slice().reverse().map((g) => {
+        const text = g.gen === 0 ? g.summary : (g.summary || g.reason || '');
+        const shortT = text && text.length > 110 ? esc(text.slice(0, 110)) + `… <span class="more" data-full="${esc(text)}">更多</span>` : esc(text);
+        return `<tr><td class="num">${g.gen}</td><td style="white-space:nowrap">${fmtDate(g.ts)}</td><td><span class="tag ${g.type === 'L1' ? 'l1' : ''}">${esc(g.type)}</span>${g.improver_changed && g.gen > 0 ? ' <span class="tag l1" title="improver.md 被重写">✎</span>' : ''}${g.mock ? ' <span class="tag">mock</span>' : ''}</td><td><span class="tag ${g.accepted ? 'ok' : 'no'}">${g.gen === 0 ? '初始' : g.accepted ? '接受' : '拒绝'}</span></td><td class="num">${fmtX(g.candidate?.score)}</td><td class="num">${fmtX(g.champion_measured?.score)}</td><td class="num ${g.delta > 0 ? 'up' : g.delta < 0 ? 'down' : ''}">${g.gen === 0 ? '—' : fmtPct(g.delta)}</td><td class="num">${g.usage ? fmtInt((g.usage.input_tokens || 0) + (g.usage.output_tokens || 0)) : '—'}</td><td class="num">${g.usage ? fmtMoney(g.usage.cost_usd) : '—'}</td><td class="summ">${shortT}</td><td>${g.run_url ? `<a href="${esc(g.run_url)}" target="_blank" rel="noopener">日志</a>` : '—'}</td></tr>`;
+      }).join('')}</tbody></table></div>
+    </section>
+
+    <section><h2>为什么这是"真的 RSI"</h2><p class="sub">六条判据，每条对应一个可验证的机制。</p>${critBlock}</section>`;
+
+    const app = $('#app');
+    app.innerHTML = html;
+    bindTips(app);
+    app.querySelectorAll('.more').forEach((el) => el.addEventListener('click', () => { el.parentElement.textContent = el.dataset.full; }));
+  }
+
+  let lastData = null, rt = null;
+  addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => { if (lastData) render(lastData); }, 150); });
+  const src = new URLSearchParams(location.search).get('src') || 'history.json';
+  fetch(src, { cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error(r.status + ' ' + r.statusText); return r.json(); }).then((h) => { lastData = h; render(h); })
+    .catch((e) => { $('#app').innerHTML = `<div class="card err">无法读取 ${esc(src)}：${esc(e.message)}</div>`; });
+})();
+</script>
+</body>
+</html>

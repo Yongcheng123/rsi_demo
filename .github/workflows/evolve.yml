@@ -1,0 +1,153 @@
+# The RSI loop. One run = one generation. Three jobs with strictly separated powers:
+#   ① propose  — has the API key, cannot write to the repo
+#   ② evaluate — has no secrets and no network; runs the untrusted candidate in a sealed container
+#   ③ ratchet  — can write to the repo, runs no agent code
+# Then Pages is redeployed from the new commit.
+name: evolve
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"   # four generations a day (UTC); GitHub may delay by a few minutes
+  workflow_dispatch:
+    inputs:
+      type:
+        description: "Generation type"
+        type: choice
+        options: [auto, L0, L1]
+        default: auto
+
+concurrency:
+  group: evolve
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  propose:
+    name: "① propose"
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    outputs:
+      skip: ${{ steps.budget.outputs.skip }}
+      gen_type: ${{ steps.propose.outputs.gen_type }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - id: budget
+        name: Kill switch & daily budget
+        env:
+          MAX_GENS_PER_DAY: ${{ vars.MAX_GENS_PER_DAY || 4 }}
+          MAX_COST_USD_PER_DAY: ${{ vars.MAX_COST_USD_PER_DAY || 0 }}
+        run: node scripts/budget.mjs
+      - id: propose
+        name: Ask the model for a candidate
+        if: steps.budget.outputs.skip != 'true'
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          RSI_MODEL: ${{ vars.RSI_MODEL || 'claude-opus-5' }}
+          RSI_EFFORT: ${{ vars.RSI_EFFORT || 'high' }}
+        run: node scripts/propose.mjs --out candidate --type "${{ inputs.type || 'auto' }}"
+      - uses: actions/upload-artifact@v4
+        if: steps.budget.outputs.skip != 'true'
+        with:
+          name: candidate
+          path: candidate/
+          retention-days: 14
+          if-no-files-found: error
+
+  evaluate:
+    name: "② evaluate (sealed)"
+    needs: propose
+    if: needs.propose.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    permissions: {}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate
+          path: candidate
+      - name: Run the arena with no network, read-only source, no secrets
+        env:
+          RSI_RUN_SEED: ${{ github.run_id }}
+        run: |
+          mkdir -p out
+          docker run --rm --network none --read-only --tmpfs /tmp \
+            --memory 3g --pids-limit 256 --cap-drop ALL --security-opt no-new-privileges \
+            -v "$PWD:/work:ro" -v "$PWD/out:/out" -w /work \
+            -e RSI_RUN_SEED \
+            node:20-bookworm-slim \
+            node arena/run.mjs --solver champion=agent/solver.js --solver candidate=candidate/solver.js --out /out/scores.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: scores
+          path: out/scores.json
+          retention-days: 14
+
+  ratchet:
+    name: "③ ratchet & commit"
+    needs: [propose, evaluate]
+    if: needs.propose.outputs.skip != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    outputs:
+      accepted: ${{ steps.ratchet.outputs.accepted }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - uses: actions/download-artifact@v4
+        with:
+          name: candidate
+          path: candidate
+      - uses: actions/download-artifact@v4
+        with:
+          name: scores
+          path: out
+      - id: ratchet
+        name: Decide, apply, record
+        run: node scripts/ratchet.mjs --scores out/scores.json --candidate candidate --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Commit the generation (accepted or not)
+        run: |
+          git config user.name "rsi-bot"
+          git config user.email "rsi-bot@users.noreply.github.com"
+          git add agent docs
+          git commit -F .tmp/commit-msg.txt
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
+
+  deploy:
+    name: "④ publish dashboard"
+    needs: ratchet
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}   # the tip that ratchet just pushed, not the sha this run started from
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+      - id: deployment
+        uses: actions/deploy-pages@v4

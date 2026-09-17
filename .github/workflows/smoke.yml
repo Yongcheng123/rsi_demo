@@ -1,0 +1,27 @@
+# Sanity for humans editing the arena: guard, quick arena, and the whole pipeline in mock mode.
+name: smoke
+on:
+  push:
+    branches: [main]
+    paths-ignore: ["docs/**", "agent/**", "*.md"]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Guard accepts the champion
+        run: node -e "import('./arena/guard.mjs').then(({guard})=>{const v=guard(require('fs').readFileSync('agent/solver.js','utf8'));if(v.length){console.error(v);process.exit(1)}console.log('guard clean')})"
+      - name: Mock proposal → quick arena → dry-run ratchet
+        run: |
+          node scripts/propose.mjs --out .tmp/candidate --mock --type L0
+          node arena/run.mjs --solver champion=agent/solver.js --solver candidate=.tmp/candidate/solver.js --quick --out .tmp/scores.json
+          node scripts/ratchet.mjs --scores .tmp/scores.json --candidate .tmp/candidate --dry-run

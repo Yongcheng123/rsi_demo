@@ -1,0 +1,10 @@
+{
+  "p_meta": 0.2,
+  "stall": 0,
+  "base_p_meta": 0.2,
+  "p_meta_step": 0.1,
+  "p_meta_max": 0.6,
+  "force_meta_after_stall": 3,
+  "margin": 0.05,
+  "_doc": "Mechanical, ratchet-updated strategy state. p_meta = probability that the next generation targets improver.md (L1) instead of solver.js (L0); it rises with consecutive rejections and resets on acceptance."
+}

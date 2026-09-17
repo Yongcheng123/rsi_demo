@@ -1,0 +1,166 @@
+{
+  "version": 1,
+  "created": "2026-09-17T15:22:03.859Z",
+  "repo": "Yongcheng123/rsi_demo",
+  "generations": [
+    {
+      "gen": 0,
+      "ts": "2026-09-17T15:17:31.232Z",
+      "type": "init",
+      "model": null,
+      "accepted": true,
+      "reason": "initial genome — solver.js is byte-identical to the frozen baseline, so its score is 1.0 by definition (measured here for honesty)",
+      "delta": 0,
+      "candidate": {
+        "score": 0.9974,
+        "score_train": 0.9987,
+        "correct": true,
+        "noise_pct": 4.82,
+        "bytes": 2848,
+        "tasks": {
+          "topK": {
+            "speedup": 0.9867,
+            "speedup_train": 0.9938,
+            "us": 1112.7,
+            "base_us": 1099.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 0.9838,
+            "speedup_train": 1.0026,
+            "us": 4176.4,
+            "base_us": 4134.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 1.0105,
+            "speedup_train": 0.9945,
+            "us": 4631.5,
+            "base_us": 4680.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 1.0059,
+            "speedup_train": 0.9903,
+            "us": 13814.6,
+            "base_us": 13960.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 1.0065,
+            "speedup_train": 0.9825,
+            "us": 27622.5,
+            "base_us": 27735.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 0.9998,
+            "speedup_train": 1.0002,
+            "us": 8823.2,
+            "base_us": 8824.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 1.004,
+            "speedup_train": 1.0151,
+            "us": 1967.3,
+            "base_us": 1968.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 0.9826,
+            "speedup_train": 1.0111,
+            "us": 10188,
+            "base_us": 10048.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 0.9974,
+        "score_train": 0.9987,
+        "correct": true,
+        "noise_pct": 4.82,
+        "bytes": 2848,
+        "tasks": {
+          "topK": {
+            "speedup": 0.9867,
+            "speedup_train": 0.9938,
+            "us": 1112.7,
+            "base_us": 1099.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 0.9838,
+            "speedup_train": 1.0026,
+            "us": 4176.4,
+            "base_us": 4134.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 1.0105,
+            "speedup_train": 0.9945,
+            "us": 4631.5,
+            "base_us": 4680.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 1.0059,
+            "speedup_train": 0.9903,
+            "us": 13814.6,
+            "base_us": 13960.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 1.0065,
+            "speedup_train": 0.9825,
+            "us": 27622.5,
+            "base_us": 27735.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 0.9998,
+            "speedup_train": 1.0002,
+            "us": 8823.2,
+            "base_us": 8824.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 1.004,
+            "speedup_train": 1.0151,
+            "us": 1967.3,
+            "base_us": 1968.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 0.9826,
+            "speedup_train": 1.0111,
+            "us": 10188,
+            "base_us": 10048.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "noise_pct": 4.82,
+      "seed": 2951856096,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpus": 10,
+        "cpu": "Apple M5"
+      },
+      "arena_ms": 43573,
+      "usage": null,
+      "summary": "Eight deliberately naive but correct implementations, and improver v0 written by a human.",
+      "run_url": null,
+      "improver_changed": true,
+      "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n_This file is part of the genome. The meta level rewrites it when object-level\nprogress stalls. Version 0 was written by a human._\n\n## Procedure\n\n1. Read the evaluation report. Rank the eight tasks by their current speedup on\n   the train split. The tasks closest to 1× are where the score is hiding.\n2. For the two or three weakest tasks, replace the algorithm with one of better\n   asymptotic complexity. Prefer well-known algorithms you can implement\n   correctly from memory over clever ones.\n3. Leave every other function byte-for-byte unchanged this generation, so a\n   rejection can be attributed to a specific change.\n4. Before you output, walk through each edge case in the contract table and\n   trace your code by hand: empty input, `k = 0`, `k > n`, negative numbers,\n   duplicates, touching intervals, strings mixed with numbers.\n5. Write down in `agent/notes.md` which functions are now believed optimal,\n   what you changed, and what you would try next.\n\n## Rules of thumb\n\n- Correctness first. A rejected generation for a wrong edge case costs more than\n  a smaller speedup.\n- Never use a string literal; the guard rejects the file. Use regex literals or\n  character codes if you must handle text.\n- Do not touch the module top level except for `export function` declarations.\n",
+      "notes_changed": false
+    }
+  ]
+}
