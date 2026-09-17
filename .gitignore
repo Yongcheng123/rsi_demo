@@ -5,3 +5,4 @@ out/
 *.cpuprofile
 .DS_Store
 .claude/
+ouroboros/
