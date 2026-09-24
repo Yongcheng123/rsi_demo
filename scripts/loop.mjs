@@ -12,6 +12,7 @@
 //
 // This is the same three stages CI runs, in the same order, with the same scripts — the only
 // things CI adds are the permission split between jobs and the sealed container.
+import './env.mjs';
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -47,17 +48,19 @@ if (!LIVE) {
     try { fs.symlinkSync(path.join(REPO, l), path.join(SANDBOX, l)); } catch {}
   }
 }
-if (!MOCK && !process.env.ANTHROPIC_API_KEY) {
-  out(`${C.r}ANTHROPIC_API_KEY is not set in this shell.${C.x}`);
-  out(`  export it here and re-run, or add --mock to exercise the pipeline without the model:`);
-  out(`  ${C.c}export ANTHROPIC_API_KEY=sk-ant-…  &&  node scripts/loop.mjs --gens ${GENS}${C.x}`);
+const PROVIDER = (process.env.RSI_PROVIDER || 'anthropic').toLowerCase();
+const KEY_VAR = PROVIDER === 'openai' ? 'OPENAI_API_KEY' : 'ANTHROPIC_API_KEY';
+const LOCAL_ENDPOINT = /^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])/i.test(process.env.OPENAI_BASE_URL || '');
+if (!MOCK && !process.env[KEY_VAR] && !(PROVIDER === 'openai' && LOCAL_ENDPOINT)) {
+  out(`${C.r}${KEY_VAR} is not set (provider: ${PROVIDER}).${C.x}`);
+  out(`  put it in ${C.c}.env.local${C.x} (gitignored) or export it, or add ${C.c}--mock${C.x} to run without a model.`);
   process.exit(1);
 }
 
 const hist0 = JSON.parse(fs.readFileSync(path.join(ROOT, 'docs/history.json'), 'utf8'));
 const startGen = (hist0.generations.at(-1)?.gen ?? 0);
 out('');
-out(`${C.b}RSI loop${C.x} ${C.d}·${C.x} ${GENS} generation${GENS > 1 ? 's' : ''} ${C.d}·${C.x} ${MOCK ? `${C.y}mock${C.x}` : `${C.c}${process.env.RSI_MODEL || 'claude-opus-5'}${C.x}`}${QUICK ? ` ${C.d}· quick arena${C.x}` : ''}`);
+out(`${C.b}RSI loop${C.x} ${C.d}·${C.x} ${GENS} generation${GENS > 1 ? 's' : ''} ${C.d}·${C.x} ${MOCK ? `${C.y}mock${C.x}` : `${C.c}${process.env.RSI_MODEL || (PROVIDER === 'openai' ? 'gpt-5' : 'claude-opus-5')}${C.x} ${C.d}via ${PROVIDER}${C.x}`}${QUICK ? ` ${C.d}· quick arena${C.x}` : ''}`);
 out(`${C.d}root   ${ROOT}${LIVE ? `  ${C.y}(LIVE — writes the real agent/ and docs/)${C.x}` : `${C.d}  (sandbox${resuming ? ', resuming' : ', reset'} — nothing tracked by git is touched)`}${C.x}`);
 out(`${C.d}watch  npm run watch   →  http://localhost:8787/${LIVE ? 'docs/' : '.tmp/local/docs/'}   (auto-refreshes every 3s)${C.x}`);
 

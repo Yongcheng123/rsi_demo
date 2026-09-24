@@ -237,6 +237,7 @@ scripts/
   heartbeat.mjs        ③b 记录没有产出代际的运行（跳过 / 故障）
   budget.mjs           预检：密钥、刹车、限速
   loop.mjs             本地驱动器：在沙箱里把三个阶段连跑 N 代
+  env.mjs              加载 .env.local（gitignore，本地凭证）
 docs/
   index.html           仪表盘（原生 SVG，零依赖，自动轮询）
   history.json         每一代的完整记录 + 没产出代际的运行
@@ -248,6 +249,55 @@ wrangler.toml          Cloudflare Pages 配置（只发布 docs/）
   cloudflare.yml       docs/ 变化时发布到 Cloudflare Pages（没配 secret 则跳过）
   smoke.yml            守卫 + 快速竞技场 + mock 流水线
 ```
+
+## 换一个模型提供方
+
+模型调用只在 `scripts/propose.mjs` 的 `ask()` 里。竞技场、静态守卫、棘轮、仪表盘都只认
+"一个字符串形式的 solver"，所以提供方是个实现细节。
+
+```bash
+# 默认：Anthropic
+RSI_PROVIDER=anthropic
+ANTHROPIC_API_KEY=sk-ant-…
+RSI_MODEL=claude-opus-5        # 可选，这是默认值
+
+# 任何 OpenAI 兼容 endpoint：OpenAI / DeepSeek / Groq / OpenRouter / LiteLLM 代理 / 本地 Ollama
+RSI_PROVIDER=openai
+OPENAI_BASE_URL=https://api.deepseek.com/v1     # 带不带 /v1 后缀都行
+OPENAI_API_KEY=sk-…                             # 本地 endpoint 可以不填
+RSI_MODEL=deepseek-chat
+```
+
+本地跑的话把这些写进 `.env.local`（**已 gitignore，这个仓库是公开的**），脚本会自动加载，
+真实环境变量优先级更高。CI 用 GitHub Secrets，不受影响。
+
+CI 里切换提供方靠仓库变量，只需要配对应的那一个 secret：
+
+```bash
+gh variable set RSI_PROVIDER    --body openai   --repo <owner>/<repo>
+gh variable set OPENAI_BASE_URL --body https://… --repo <owner>/<repo>
+gh variable set RSI_MODEL       --body <model>  --repo <owner>/<repo>
+gh secret   set OPENAI_API_KEY                  --repo <owner>/<repo>
+```
+
+OpenAI 那条路是**原生 fetch + 流式**，不加依赖。流式不是为了好看：非流式时服务端要等生成完
+才发响应头，而 undici 的 `headersTimeout` 是写死的 300 秒（`AbortSignal` 覆盖不了它），
+推理模型写一个 4 KB 的 solver 轻松超时。流式下响应头立刻到，只有真正卡死的流才会超时。
+
+### 推理模型要注意 token 预算
+
+`RSI_MAX_TOKENS`（默认 32000）对很多提供方来说**把推理 token 也算在内**。实测
+`minimax-m3`：第一次调用产出 95,629 字符，其中 95,621 是 reasoning，正文只剩 8 个字符就撞上限了。
+如果日志里看到 `output hit the token cap`，把它调大：
+
+```bash
+RSI_MAX_TOKENS=64000
+```
+
+`propose.mjs` 有一轮修复机制，第一次跑飞了还能救回来，但那一次的 token 是白烧的。
+
+> **变异器的质量直接就是这个 RSI 循环的天花板。** 换便宜模型不只是省钱——它决定曲线能爬到哪、
+> 平台期在哪出现。仪表盘的代际表里记录了每一代用的是哪个模型，混用时不会算糊涂账。
 
 ## 部署到 Cloudflare Pages（可选）
 

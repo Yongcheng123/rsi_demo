@@ -42,7 +42,10 @@ jobs:
       - id: budget
         name: Preflight — secret, kill switch, daily budget
         env:
+          RSI_PROVIDER: ${{ vars.RSI_PROVIDER || 'anthropic' }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           MAX_GENS_PER_DAY: ${{ vars.MAX_GENS_PER_DAY || 4 }}
           MAX_COST_USD_PER_DAY: ${{ vars.MAX_COST_USD_PER_DAY || 0 }}
         run: node scripts/budget.mjs
@@ -50,9 +53,16 @@ jobs:
         name: Ask the model for a candidate
         if: steps.budget.outputs.skip != 'true'
         env:
+          # Provider is chosen by repo variables; only the matching secret needs to exist.
+          #   anthropic (default) → secrets.ANTHROPIC_API_KEY
+          #   openai              → secrets.OPENAI_API_KEY + vars.OPENAI_BASE_URL
+          RSI_PROVIDER: ${{ vars.RSI_PROVIDER || 'anthropic' }}
+          OPENAI_BASE_URL: ${{ vars.OPENAI_BASE_URL }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          RSI_MODEL: ${{ vars.RSI_MODEL || 'claude-opus-5' }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          RSI_MODEL: ${{ vars.RSI_MODEL }}
           RSI_EFFORT: ${{ vars.RSI_EFFORT || 'high' }}
+          RSI_MAX_TOKENS: ${{ vars.RSI_MAX_TOKENS }}
         run: node scripts/propose.mjs --out candidate --type "${{ inputs.type || 'auto' }}"
       - uses: actions/upload-artifact@v4
         if: steps.budget.outputs.skip != 'true'

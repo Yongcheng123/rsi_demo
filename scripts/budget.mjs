@@ -5,6 +5,7 @@
 // A missing API key is a CLEAN SKIP, not a crash. An unattended loop must distinguish
 // "deliberately not running" from "broken": 26 identical red failures carry no more
 // information than one, and they bury a real regression when it eventually happens.
+import './env.mjs';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -15,7 +16,7 @@ const MAX_COST = Number(process.env.MAX_COST_USD_PER_DAY || 0); // 0 = unlimited
 let skip = false, reason = 'ok';
 
 if (fs.existsSync(path.join(root, 'PAUSED'))) { skip = true; reason = 'PAUSED file present (kill switch)'; }
-else if (!process.env.ANTHROPIC_API_KEY) { skip = true; reason = 'ANTHROPIC_API_KEY secret is not set — the loop cannot propose'; }
+else if (missingKey()) { skip = true; reason = `${missingKey()} is not set — the loop cannot propose`; }
 else {
   const hist = JSON.parse(fs.readFileSync(path.join(root, 'docs/history.json'), 'utf8'));
   const dayAgo = Date.now() - 24 * 3600 * 1000;
@@ -26,4 +27,15 @@ else {
   else reason = `${recent.length}/${MAX_GENS} generations and $${cost.toFixed(2)} in the last 24h`;
 }
 console.log(`skip=${skip}\nreason=${reason}`);
+
+// Which credential this run actually needs depends on the provider; a local endpoint needs none.
+function missingKey() {
+  const provider = (process.env.RSI_PROVIDER || 'anthropic').toLowerCase();
+  if (provider === 'openai') {
+    const base = process.env.OPENAI_BASE_URL || '';
+    if (/^https?:\/\/(localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])/i.test(base)) return null; // Ollama & friends
+    return process.env.OPENAI_API_KEY ? null : 'OPENAI_API_KEY';
+  }
+  return process.env.ANTHROPIC_API_KEY ? null : 'ANTHROPIC_API_KEY';
+}
 if (process.env.GITHUB_OUTPUT) fs.appendFileSync(process.env.GITHUB_OUTPUT, `skip=${skip}\nreason=${reason}\n`);

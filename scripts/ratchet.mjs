@@ -75,7 +75,7 @@ else { strategy.stall += 1; strategy.p_meta = +Math.min(strategy.p_meta_max, str
 
 // ---- history (every generation is recorded, accepted or not — this is also what keeps the cron alive)
 const entry = {
-  gen, ts: new Date().toISOString(), type: meta.type || '?', model: meta.model, effort: meta.effort ?? null, mock: !!meta.mock, accepted, reason, delta,
+  gen, ts: new Date().toISOString(), type: meta.type || '?', provider: meta.provider ?? null, model: meta.model, effort: meta.effort ?? null, mock: !!meta.mock, accepted, reason, delta,
   candidate: compact(cand), champion_measured: compact(champ), champion_failed: !champ.correct,
   noise_pct: cand.noise_pct ?? champ.noise_pct ?? null, seed: scores.seed, runner: scores.runner, arena_ms: scores.duration_ms,
   usage: meta.usage || null, summary: meta.summary || null, proposal_error: meta.error || null, repaired: !!meta.repaired, run_url: args['run-url'] || null,

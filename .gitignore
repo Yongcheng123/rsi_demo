@@ -1,8 +1,10 @@
-node_modules/
-.tmp/
-candidate/
-out/
 *.cpuprofile
 .DS_Store
 .claude/
+.env
+.env.local
+.tmp/
+candidate/
+node_modules/
 ouroboros/
+out/
