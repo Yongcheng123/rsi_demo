@@ -162,5 +162,18 @@
       "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n_This file is part of the genome. The meta level rewrites it when object-level\nprogress stalls. Version 0 was written by a human._\n\n## Procedure\n\n1. Read the evaluation report. Rank the eight tasks by their current speedup on\n   the train split. The tasks closest to 1× are where the score is hiding.\n2. For the two or three weakest tasks, replace the algorithm with one of better\n   asymptotic complexity. Prefer well-known algorithms you can implement\n   correctly from memory over clever ones.\n3. Leave every other function byte-for-byte unchanged this generation, so a\n   rejection can be attributed to a specific change.\n4. Before you output, walk through each edge case in the contract table and\n   trace your code by hand: empty input, `k = 0`, `k > n`, negative numbers,\n   duplicates, touching intervals, strings mixed with numbers.\n5. Write down in `agent/notes.md` which functions are now believed optimal,\n   what you changed, and what you would try next.\n\n## Rules of thumb\n\n- Correctness first. A rejected generation for a wrong edge case costs more than\n  a smaller speedup.\n- Never use a string literal; the guard rejects the file. Use regex literals or\n  character codes if you must handle text.\n- Do not touch the module top level except for `export function` declarations.\n",
       "notes_changed": false
     }
-  ]
+  ],
+  "runs": [
+    {
+      "ts": "2026-09-24T14:08:59.323Z",
+      "last_ts": "2026-09-24T14:08:59.323Z",
+      "status": "skipped",
+      "stage": "preflight",
+      "reason": "ANTHROPIC_API_KEY secret is not set — the loop cannot propose",
+      "count": 1,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36010625511",
+      "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36010625511"
+    }
+  ],
+  "last_heartbeat_commit": "2026-09-24T14:08:59.323Z"
 }
