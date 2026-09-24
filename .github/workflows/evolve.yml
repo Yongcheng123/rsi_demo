@@ -98,12 +98,17 @@ jobs:
           RSI_RUN_SEED: ${{ github.run_id }}
         run: |
           mkdir -p out
+          # The container gets NO writable mount: arena/run.mjs prints the report to stdout
+          # (all logging goes to stderr) and the host redirects it. One less thing that can
+          # fail on a permission mismatch — an earlier run scored the candidate at 27x and
+          # then died with EACCES writing the result file.
           docker run --rm --network none --read-only --tmpfs /tmp \
             --memory 3g --pids-limit 256 --cap-drop ALL --security-opt no-new-privileges \
-            -v "$PWD:/work:ro" -v "$PWD/out:/out" -w /work \
+            -v "$PWD:/work:ro" -w /work \
             -e RSI_RUN_SEED \
             node:20-bookworm-slim \
-            node arena/run.mjs --solver champion=agent/solver.js --solver candidate=candidate/solver.js --out /out/scores.json
+            node arena/run.mjs --solver champion=agent/solver.js --solver candidate=candidate/solver.js > out/scores.json
+          node -e "const r=require('./out/scores.json'); if(!r.solvers) { console.error('arena produced no report'); process.exit(1) } console.log('candidate', r.solvers.candidate?.score, 'champion', r.solvers.champion?.score)"
       - uses: actions/upload-artifact@v4
         with:
           name: scores
