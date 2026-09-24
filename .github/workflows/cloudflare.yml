@@ -1,0 +1,45 @@
+# Publish the dashboard to Cloudflare Pages whenever docs/ changes.
+#
+# Runs alongside the GitHub Pages deploy in evolve.yml — the two are independent, so you can
+# keep both live or delete either. The loop itself never runs here; this job only uploads
+# two static files.
+name: cloudflare
+
+on:
+  push:
+    branches: [main]
+    paths: ["docs/**", ".github/workflows/cloudflare.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: cloudflare-pages
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    # Skip cleanly on a fork or before the secrets exist, instead of failing every push.
+    if: github.repository_owner != '' 
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check credentials
+        id: creds
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          if [ -z "$TOKEN" ] || [ -z "$ACCOUNT" ]; then
+            echo "CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set — skipping Cloudflare deploy."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Deploy to Cloudflare Pages
+        if: steps.creds.outputs.ready == 'true'
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx --yes wrangler@4 pages deploy docs --project-name "${{ vars.CF_PAGES_PROJECT || 'rsi-demo' }}" --branch main --commit-dirty=true

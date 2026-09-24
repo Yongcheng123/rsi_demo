@@ -1,0 +1,20 @@
+# Cloudflare Pages — the DASHBOARD only (two static files).
+#
+# The loop itself stays on GitHub Actions, and this is a hard technical limit, not a
+# preference. The arena's fundamental operation is to take an agent-written solver as
+# SOURCE TEXT and run it. A Workers isolate cannot do that at all — measured against
+# workerd (wrangler dev), every path is closed:
+#
+#   eval('1')                 → EvalError: Code generation from strings disallowed
+#   new Function('return 1')  → EvalError: Code generation from strings disallowed
+#   vm.runInContext(src, ctx) → The runInThisContext method is not implemented
+#                               (node:vm imports under nodejs_compat but is a stub)
+#
+# So ② evaluate needs a real VM or container; it stays in GitHub Actions, where it also
+# gets `docker --network none`. See README § 为什么竞技场不能搬到 Workers.
+#
+#   npx wrangler login
+#   npm run deploy:cf
+name = "rsi-demo"
+pages_build_output_dir = "docs"
+compatibility_date = "2026-05-01"

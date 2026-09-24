@@ -1,0 +1,12 @@
+# history.json is rewritten every generation and the dashboard polls it — never cache it.
+/history.json
+  Cache-Control: no-store, must-revalidate
+  Access-Control-Allow-Origin: *
+
+# The page itself changes rarely but must not go stale after a deploy.
+/index.html
+  Cache-Control: public, max-age=0, must-revalidate
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin

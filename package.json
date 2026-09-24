@@ -13,7 +13,8 @@
     "arena:quick": "node arena/run.mjs --solver champion=agent/solver.js --quick --out .tmp/scores.json",
     "propose:mock": "node scripts/propose.mjs --out .tmp/candidate --mock",
     "loop": "node scripts/loop.mjs",
-    "watch": "python3 -m http.server 8787 --bind 127.0.0.1"
+    "watch": "python3 -m http.server 8787 --bind 127.0.0.1",
+    "deploy:cf": "wrangler pages deploy docs --project-name rsi-demo --commit-dirty=true"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",

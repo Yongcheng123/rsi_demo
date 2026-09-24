@@ -238,13 +238,54 @@ scripts/
   budget.mjs           预检：密钥、刹车、限速
   loop.mjs             本地驱动器：在沙箱里把三个阶段连跑 N 代
 docs/
-  index.html           仪表盘（原生 SVG，零依赖）
-  history.json         每一代的完整记录
+  index.html           仪表盘（原生 SVG，零依赖，自动轮询）
+  history.json         每一代的完整记录 + 没产出代际的运行
+  _headers             Cloudflare Pages 缓存策略：history.json 不缓存
+wrangler.toml          Cloudflare Pages 配置（只发布 docs/）
 .github/workflows/
   evolve.yml           主循环：propose → evaluate → ratchet → heartbeat → deploy
-  pages.yml            人工改 docs/ 时重新发布
+  pages.yml            人工改 docs/ 时重新发布（GitHub Pages）
+  cloudflare.yml       docs/ 变化时发布到 Cloudflare Pages（没配 secret 则跳过）
   smoke.yml            守卫 + 快速竞技场 + mock 流水线
 ```
+
+## 部署到 Cloudflare Pages（可选）
+
+仪表盘是两个静态文件，放哪都行。Cloudflare Pages：
+
+```bash
+npx wrangler login          # 浏览器授权一次
+npm run deploy:cf           # → https://rsi-demo.pages.dev
+```
+
+想让机器人每次提交后自动发布，在仓库里加两个 secret，`.github/workflows/cloudflare.yml`
+就会接管（没配 secret 时它会干净跳过，不会让每次 push 变红）：
+
+```bash
+gh secret set CLOUDFLARE_API_TOKEN   --repo Yongcheng123/rsi_demo
+gh secret set CLOUDFLARE_ACCOUNT_ID  --repo Yongcheng123/rsi_demo
+```
+
+`docs/_headers` 把 `history.json` 设成 `no-store`——仪表盘在轮询它，CDN 缓存会让页面看起来卡住。
+GitHub Pages 的部署是独立的，两个可以并存，也可以删掉任一个。
+
+### 为什么竞技场不能搬到 Workers
+
+只有仪表盘能上 Cloudflare。竞技场的根本动作是**把 agent 写出来的 solver 当作源码文本执行**，
+而 Workers isolate 做不到这件事。对着 workerd（`wrangler dev`）实测，三条路全封死：
+
+| 调用 | 结果 |
+|---|---|
+| `eval('1')` | `EvalError: Code generation from strings disallowed` |
+| `new Function('return 1')` | `EvalError: Code generation from strings disallowed` |
+| `vm.runInContext(src, ctx)` | `The runInThisContext method is not implemented` |
+
+`node:vm` 在 `nodejs_compat` 下能 import，但是个空壳。这不是配置问题——**禁止从字符串生成代码正是
+Workers 安全模型的一部分**，而这恰好是本项目必须做的事。所以 ② evaluate 需要真正的 VM 或容器，
+留在 GitHub Actions（那里还能套 `docker --network none`）。
+
+（顺带一提：我原以为拦路的是 Workers 冻结时钟——毕竟评分靠计时。实测本地 workerd 里
+`Date.now()` 和 `performance.now()` 在同步计算中照常走。真正的拦路虎是代码生成，不是时钟。）
 
 ## 已知局限（非目标）
 
