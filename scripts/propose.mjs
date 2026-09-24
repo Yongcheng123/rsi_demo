@@ -269,8 +269,30 @@ async function askOpenAI(system, user, prior) {
     throw new Error(`${MODEL} via ${BASE_URL} failed (HTTP ${res.status}): ${String(msg).slice(0, 400)}`);
   }
 
-  let text = '', finish = null, usageObj = null, billed = MODEL, buf = '', reasoningChars = 0, chunks = 0;
-  const tick = setInterval(() => log(`    …streaming: ${text.length} chars${reasoningChars ? ` (+${reasoningChars} reasoning)` : ''}`), 30000);
+  // Some models stream their scratchpad inside <think>…</think> ON THE CONTENT CHANNEL —
+  // sometimes in addition to reasoning_content. Strip it as it arrives, so `answer` holds
+  // only the real reply: the circuit breaker below has to measure the answer, not the
+  // thinking, and the block parser must never see a <think> body.
+  let answer = '', finish = null, usageObj = null, billed = MODEL, buf = '', reasoningChars = 0, thinkChars = 0, chunks = 0;
+  let inThink = false, carry = '';
+  const OPEN = '<think>', CLOSE = '</think>';
+  const feed = (chunk) => {
+    let t = carry + chunk;
+    carry = '';
+    while (t) {
+      if (inThink) {
+        const i = t.indexOf(CLOSE);
+        if (i === -1) { const keep = Math.min(t.length, CLOSE.length - 1); thinkChars += t.length - keep; carry = t.slice(t.length - keep); return; }
+        thinkChars += i; t = t.slice(i + CLOSE.length); inThink = false;
+      } else {
+        const i = t.indexOf(OPEN);
+        if (i === -1) { const keep = Math.min(t.length, OPEN.length - 1); answer += t.slice(0, t.length - keep); carry = t.slice(t.length - keep); return; }
+        answer += t.slice(0, i); t = t.slice(i + OPEN.length); inThink = true;
+      }
+    }
+  };
+  const scratch = () => reasoningChars + thinkChars;
+  const tick = setInterval(() => log(`    …streaming: ${answer.length} chars of answer${scratch() ? ` (+${scratch()} thinking)` : ''}`), 30000);
   try {
     const decoder = new TextDecoder();
     for await (const part of res.body) {
@@ -290,24 +312,26 @@ async function askOpenAI(system, user, prior) {
         const c = ev.choices?.[0];
         if (!c) continue;
         chunks++;
-        if (c.delta?.content) text += c.delta.content;
+        if (c.delta?.content) feed(c.delta.content);
         if (c.delta?.reasoning_content) reasoningChars += c.delta.reasoning_content.length; // counted, not kept
         if (c.finish_reason) finish = c.finish_reason;
-        if (reasoningChars > MAX_REASONING_CHARS && text.trim().length < 200) {
-          throw new Error(`${MODEL} is stuck in its scratchpad: ${reasoningChars} reasoning characters and only ${text.trim().length} of answer. `
+        if (scratch() > MAX_REASONING_CHARS && answer.trim().length < 200) {
+          throw new Error(`${MODEL} is stuck in its scratchpad: ${scratch()} characters of thinking and only ${answer.trim().length} of answer. `
             + `Aborted to stop burning tokens. Try a lower RSI_REASONING_EFFORT, a model that is better at instruction-following, `
             + `or raise RSI_MAX_REASONING_CHARS (now ${MAX_REASONING_CHARS}) if this model genuinely needs that much.`);
         }
       }
     }
   } catch (e) {
-    if (e?.name === 'TimeoutError') throw new Error(`the stream stalled after ${text.length} chars (RSI_TIMEOUT_MS=${TIMEOUT_MS})`);
+    if (e?.name === 'TimeoutError') throw new Error(`the stream stalled after ${answer.length} chars of answer and ${scratch()} of thinking (RSI_TIMEOUT_MS=${TIMEOUT_MS})`);
     throw e;
   } finally { clearInterval(tick); }
 
+  if (carry) { if (!inThink) answer += carry; carry = ''; }   // a dangling partial tag is just text
   if (finish === 'content_filter') throw new Error('request was blocked by a content filter');
-  if (!text.trim()) throw new Error(`${MODEL} returned empty content after ${chunks} chunks (finish_reason=${finish}${reasoningChars ? `, ${reasoningChars} reasoning chars` : ''})`);
+  if (!answer.trim()) throw new Error(`${MODEL} returned no answer after ${chunks} chunks (finish_reason=${finish}${scratch() ? `, ${scratch()} characters of thinking`: ''})`);
   const u = usageObj || {};
+  const text = answer;
   return {
     text, content: text, stop: finish, billedModel: billed,
     truncated: finish === 'length',
