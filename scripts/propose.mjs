@@ -36,6 +36,11 @@ const MODEL = process.env.RSI_MODEL || (PROVIDER === 'openai' ? 'gpt-5' : 'claud
 const EFFORT = process.env.RSI_EFFORT || 'high';
 const MAX_TOKENS = Number(process.env.RSI_MAX_TOKENS || 32000);
 const TIMEOUT_MS = Number(process.env.RSI_TIMEOUT_MS || 900000); // a local 14B model is slow
+// Runaway-reasoning circuit breaker: some reasoning models, given a large prompt, spiral in
+// the scratchpad and never start the answer. Measured on minimax-m3: 171,345 reasoning
+// characters against 8 characters of content before the upstream gave up, ~10 minutes and
+// ~170k tokens burned for nothing. Abort once the ratio is clearly hopeless.
+const MAX_REASONING_CHARS = Number(process.env.RSI_MAX_REASONING_CHARS || 120000);
 // Accept a base url with or without the /v1 suffix — both spellings are common in the wild.
 const RAW_BASE = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
 const BASE_URL = /\/v\d+$/.test(RAW_BASE) ? RAW_BASE : RAW_BASE + '/v1';
@@ -288,10 +293,15 @@ async function askOpenAI(system, user, prior) {
         if (c.delta?.content) text += c.delta.content;
         if (c.delta?.reasoning_content) reasoningChars += c.delta.reasoning_content.length; // counted, not kept
         if (c.finish_reason) finish = c.finish_reason;
+        if (reasoningChars > MAX_REASONING_CHARS && text.trim().length < 200) {
+          throw new Error(`${MODEL} is stuck in its scratchpad: ${reasoningChars} reasoning characters and only ${text.trim().length} of answer. `
+            + `Aborted to stop burning tokens. Try a lower RSI_REASONING_EFFORT, a model that is better at instruction-following, `
+            + `or raise RSI_MAX_REASONING_CHARS (now ${MAX_REASONING_CHARS}) if this model genuinely needs that much.`);
+        }
       }
     }
   } catch (e) {
-    if (e?.name === 'TimeoutError' || /aborted/i.test(String(e?.message))) throw new Error(`the stream stalled after ${text.length} chars (RSI_TIMEOUT_MS=${TIMEOUT_MS})`);
+    if (e?.name === 'TimeoutError') throw new Error(`the stream stalled after ${text.length} chars (RSI_TIMEOUT_MS=${TIMEOUT_MS})`);
     throw e;
   } finally { clearInterval(tick); }
 
