@@ -26,6 +26,7 @@ jobs:
   propose:
     name: "① propose"
     runs-on: ubuntu-latest
+    timeout-minutes: 45   # minimax-m3 at low effort takes ~11 min/call; a repair round doubles it
     permissions:
       contents: read
     outputs:
@@ -61,8 +62,11 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           RSI_MODEL: ${{ vars.RSI_MODEL }}
-          RSI_EFFORT: ${{ vars.RSI_EFFORT || 'high' }}
+          RSI_EFFORT: ${{ vars.RSI_EFFORT || 'high' }}          # Anthropic: output_config.effort
+          RSI_REASONING_EFFORT: ${{ vars.RSI_REASONING_EFFORT }} # OpenAI-compatible: reasoning_effort
           RSI_MAX_TOKENS: ${{ vars.RSI_MAX_TOKENS }}
+          RSI_MAX_REASONING_CHARS: ${{ vars.RSI_MAX_REASONING_CHARS }}
+          RSI_TIMEOUT_MS: ${{ vars.RSI_TIMEOUT_MS }}
         run: node scripts/propose.mjs --out candidate --type "${{ inputs.type || 'auto' }}"
       - uses: actions/upload-artifact@v4
         if: steps.budget.outputs.skip != 'true'

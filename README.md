@@ -274,11 +274,15 @@ RSI_MODEL=deepseek-chat
 CI 里切换提供方靠仓库变量，只需要配对应的那一个 secret：
 
 ```bash
-gh variable set RSI_PROVIDER    --body openai   --repo <owner>/<repo>
-gh variable set OPENAI_BASE_URL --body https://… --repo <owner>/<repo>
-gh variable set RSI_MODEL       --body <model>  --repo <owner>/<repo>
-gh secret   set OPENAI_API_KEY                  --repo <owner>/<repo>
+gh variable set RSI_PROVIDER         --body openai    --repo <owner>/<repo>
+gh variable set OPENAI_BASE_URL      --body https://… --repo <owner>/<repo>
+gh variable set RSI_MODEL            --body <model>   --repo <owner>/<repo>
+gh variable set RSI_REASONING_EFFORT --body low       --repo <owner>/<repo>   # 推理模型建议
+gh variable set RSI_MAX_TOKENS       --body 64000     --repo <owner>/<repo>
+gh secret   set OPENAI_API_KEY                        --repo <owner>/<repo>
 ```
+
+`① propose` 的 job 超时设成了 45 分钟：慢的推理模型单次调用可能十几分钟，加上一轮修复就翻倍。
 
 OpenAI 那条路是**原生 fetch + 流式**，不加依赖。流式不是为了好看：非流式时服务端要等生成完
 才发响应头，而 undici 的 `headersTimeout` 是写死的 300 秒（`AbortSignal` 覆盖不了它），
