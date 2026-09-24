@@ -78,6 +78,15 @@ pre.diff .add{background:var(--wash-good);color:var(--good-text)}
 pre.diff .del{background:var(--wash-crit);color:var(--crit);text-decoration:line-through;text-decoration-color:rgba(208,59,59,.4)}
 pre.doc{margin:8px 0 0;padding:10px 12px;background:var(--page);border:1px solid var(--border);border-radius:8px;overflow:auto;font:12.5px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;white-space:pre-wrap;max-height:420px}
 .empty{color:var(--muted);font-style:italic;padding:8px 0}
+.health{display:flex;flex-direction:column;gap:8px}
+.hrow{display:grid;grid-template-columns:auto auto 1fr auto;gap:10px;align-items:baseline;padding:8px 0;border-bottom:1px solid var(--grid)}
+.hrow:last-child{border-bottom:0}
+.hrow .when{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.hrow .why{color:var(--ink2);font-size:13.5px;word-break:break-word}
+.hrow .n{color:var(--muted);font-size:12.5px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.banner{border:1px solid var(--crit);background:var(--wash-crit);border-radius:12px;padding:14px 16px;margin-top:18px}
+.banner b{display:block;margin-bottom:4px}
+.banner code{font:12.5px ui-monospace,Menlo,monospace;background:var(--surface);border:1px solid var(--border);border-radius:5px;padding:2px 6px;display:inline-block;margin-top:6px}
 .crit6{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:10px}
 .crit6 div{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:13.5px}
 .crit6 b{display:block;margin-bottom:2px}
@@ -272,12 +281,16 @@ footer{border-top:1px solid var(--grid);padding:22px 0 40px;color:var(--muted);f
     const margin = 0.05;
     const lastAccepted = accepted[accepted.length - 1];
     const repo = h.repo || 'Yongcheng123/rsi_demo';
+    
     if (h.repo) { $('#repo-link').href = `https://github.com/${repo}`; $('#actions-link').href = `https://github.com/${repo}/actions/workflows/evolve.yml`; $('#readme-link').href = `https://github.com/${repo}#readme`; }
 
-    // status pill
+    // status pill — a bad run newer than the last generation is the real state of the loop
+    const runs = Array.isArray(h.runs) ? h.runs : [];
+    const lastRun = runs.at(-1);
+    const bad = lastRun && lastRun.status !== 'ok' && (!last || Date.parse(lastRun.last_ts || lastRun.ts) > Date.parse(last.ts));
     const st = $('#status'); const age = last ? (Date.now() - Date.parse(last.ts)) / 3600000 : Infinity;
-    st.className = 'pill ' + (age < 8 ? 'live' : age < 30 ? 'wait' : 'stale');
-    st.lastElementChild.textContent = age < 8 ? `运行中 · 上一代 ${ago(last.ts)}` : age < 30 ? `等待下一代 · 上一代 ${ago(last.ts)}` : last ? `已停滞 · 上一代 ${ago(last.ts)}` : '无数据';
+    if (bad) { st.className = 'pill stale'; st.lastElementChild.textContent = `${lastRun.status === 'skipped' ? '已暂停' : '故障'} · ${lastRun.count > 1 ? lastRun.count + ' 次连续' : ''}${lastRun.stage ? ' @ ' + lastRun.stage : ''} · ${ago(lastRun.last_ts || lastRun.ts)}`; }
+    else { st.className = 'pill ' + (age < 8 ? 'live' : age < 30 ? 'wait' : 'stale'); st.lastElementChild.textContent = age < 8 ? `运行中 · 上一代 ${ago(last.ts)}` : age < 30 ? `等待下一代 · 上一代 ${ago(last.ts)}` : last ? `已停滞 · 上一代 ${ago(last.ts)}` : '无数据'; }
 
     const critBlock = `
       <div class="crit6">
@@ -290,6 +303,7 @@ footer{border-top:1px solid var(--grid);padding:22px 0 40px;color:var(--muted);f
       </div>`;
 
     let html = `
+    ${bad ? `<div class="banner"><b>循环没有在产出代际</b>${esc(lastRun.reason)}${/ANTHROPIC_API_KEY/.test(lastRun.reason) ? `<br><code>gh secret set ANTHROPIC_API_KEY --repo ${esc(repo)}</code>` : ''}<div style="margin-top:8px;font-size:13px;color:var(--ink2)">最近一次${lastRun.status === 'skipped' ? '跳过' : '失败'} ${ago(lastRun.last_ts || lastRun.ts)}${lastRun.count > 1 ? ` · 已连续 ${lastRun.count} 次` : ''}${lastRun.last_run_url ? ` · <a href="${esc(lastRun.last_run_url)}" target="_blank" rel="noopener">运行日志</a>` : ''}</div></div>` : ''}
     <section class="hero">
       <div class="card stat big"><div class="label">当前冠军 · 相对冻结基线的几何平均加速比（holdout）</div><div class="value hero-fig">${fmtX(champ?.score)}</div>
         <div class="delta">${lastAccepted ? `最近一次接受：第 ${lastAccepted.gen} 代 <span class="up">${fmtPct(lastAccepted.delta)}</span> · ${ago(lastAccepted.ts)}` : '尚未有被接受的改进'}${champ?.score_train ? ` · train ${fmtX(champ.score_train)}` : ''}</div></div>
@@ -342,6 +356,14 @@ footer{border-top:1px solid var(--grid);padding:22px 0 40px;color:var(--muted);f
         const shortT = text && text.length > 110 ? esc(text.slice(0, 110)) + `… <span class="more" data-full="${esc(text)}">更多</span>` : esc(text);
         return `<tr><td class="num">${g.gen}</td><td style="white-space:nowrap">${fmtDate(g.ts)}</td><td><span class="tag ${g.type === 'L1' ? 'l1' : ''}">${esc(g.type)}</span>${g.improver_changed && g.gen > 0 ? ' <span class="tag l1" title="improver.md 被重写">✎</span>' : ''}${g.mock ? ' <span class="tag">mock</span>' : ''}</td><td><span class="tag ${g.accepted ? 'ok' : 'no'}">${g.gen === 0 ? '初始' : g.accepted ? '接受' : '拒绝'}</span></td><td class="num">${fmtX(g.candidate?.score)}</td><td class="num">${fmtX(g.champion_measured?.score)}</td><td class="num ${g.delta > 0 ? 'up' : g.delta < 0 ? 'down' : ''}">${g.gen === 0 ? '—' : fmtPct(g.delta)}</td><td class="num">${g.usage ? fmtInt((g.usage.input_tokens || 0) + (g.usage.output_tokens || 0)) : '—'}</td><td class="num">${g.usage ? fmtMoney(g.usage.cost_usd) : '—'}</td><td class="summ">${shortT}</td><td>${g.run_url ? `<a href="${esc(g.run_url)}" target="_blank" rel="noopener">日志</a>` : '—'}</td></tr>`;
       }).join('')}</tbody></table></div>
+    </section>
+
+    <section><h2>循环健康</h2><p class="sub">没有产出代际的运行也会被记录——跳过、配置错误、流水线故障。连续相同的结果折叠成一条并计数。</p>
+      <div class="card health">${runs.length ? runs.slice(-12).reverse().map((r) => {
+        const cls = r.status === 'ok' ? 'ok' : r.status === 'skipped' ? '' : 'no';
+        const label = r.status === 'ok' ? '正常' : r.status === 'skipped' ? '跳过' : '失败';
+        return `<div class="hrow"><span class="tag ${cls}">${label}</span><span class="when">${fmtDate(r.last_ts || r.ts)}</span><span class="why">${esc(r.reason)}${r.stage ? ` <span style="color:var(--muted)">@ ${esc(r.stage)}</span>` : ''}</span><span class="n">${r.count > 1 ? '×' + r.count : ''}${r.last_run_url ? ` · <a href="${esc(r.last_run_url)}" target="_blank" rel="noopener">日志</a>` : ''}</span></div>`;
+      }).join('') : '<div class="empty">没有异常运行记录——每一次运行都产出了代际。</div>'}</div>
     </section>
 
     <section><h2>为什么这是"真的 RSI"</h2><p class="sub">六条判据，每条对应一个可验证的机制。</p>${critBlock}</section>`;

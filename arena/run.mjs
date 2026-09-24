@@ -132,7 +132,7 @@ for (const s of solvers) {
   const devs = [];
   for (const e of entries) if (e.ratios_holdout?.length > 1) { const m = e.ratios_holdout.slice().sort((a, b) => a - b)[Math.floor(e.ratios_holdout.length / 2)]; for (const x of e.ratios_holdout) devs.push(100 * Math.abs(x / m - 1)); }
   S.noise_pct = devs.length ? +Math.max(...devs).toFixed(2) : null;
-  log(`${s.name}: ${S.correct ? `score ${S.score} (train ${S.score_train}) · batch noise ≤ ${S.noise_pct}%` : `INCORRECT — ${S.failures[0] || S.violations[0] || 'see report'}`}`);
+  log(`${s.name}: ${S.correct ? `score ${S.score} (train ${S.score_train}) · batch noise ≤ ${S.noise_pct == null ? "— (single batch)" : S.noise_pct + "%"}` : `INCORRECT — ${S.failures[0] || S.violations[0] || 'see report'}`}`);
 }
 const noiseVals = Object.values(result.baseline.noise);
 if (noiseVals.length) result.baseline.max_noise_pct = +Math.max(...noiseVals.map((r) => 100 * Math.abs(r - 1))).toFixed(2);

@@ -1,6 +1,10 @@
 #!/usr/bin/env node
-// scripts/budget.mjs — the two brakes: a kill switch and a daily budget.
+// scripts/budget.mjs — preflight: configuration check, kill switch, daily budget.
 // Prints `skip=true|false` and `reason=…` (also to $GITHUB_OUTPUT). Dependency-free.
+//
+// A missing API key is a CLEAN SKIP, not a crash. An unattended loop must distinguish
+// "deliberately not running" from "broken": 26 identical red failures carry no more
+// information than one, and they bury a real regression when it eventually happens.
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -11,6 +15,7 @@ const MAX_COST = Number(process.env.MAX_COST_USD_PER_DAY || 0); // 0 = unlimited
 let skip = false, reason = 'ok';
 
 if (fs.existsSync(path.join(root, 'PAUSED'))) { skip = true; reason = 'PAUSED file present (kill switch)'; }
+else if (!process.env.ANTHROPIC_API_KEY) { skip = true; reason = 'ANTHROPIC_API_KEY secret is not set — the loop cannot propose'; }
 else {
   const hist = JSON.parse(fs.readFileSync(path.join(root, 'docs/history.json'), 'utf8'));
   const dayAgo = Date.now() - 24 * 3600 * 1000;

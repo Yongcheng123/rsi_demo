@@ -53,6 +53,12 @@
                  │   无论接受与否：追加 history.json、更新 strategy.json、commit  │
                  └───────────────┬──────────────────────────────────────────┘
                                  ▼
+                 ┌──────────────────────────────────────────────────────────┐
+                 │ ③b heartbeat   always() · 可写仓库                         │
+                 │   这一代没产出？把原因写进 history.json.runs 并 commit        │
+                 │   （相同原因折叠计数，最多每 20 小时提交一次）                  │
+                 └───────────────┬──────────────────────────────────────────┘
+                                 ▼
                  ④ deploy        Pages 从刚推的 commit 重新发布 docs/
 ```
 
@@ -112,11 +118,23 @@ CI runner 是共享机器。这里的所有对策都指向一个原则：**永�
 
 想推迟平台期：v2 可以加自生成课程（模型也提新任务，准入条件是"参考解能过 && 当前冠军过不了"）。
 
-## 一个隐蔽的坑
+## 两个隐蔽的坑
 
-GitHub 会在公开仓库**连续 60 天无 commit 后禁用 scheduled workflow**。如果只在成功时 commit，
-进入平台期 → 没有 commit → cron 被关 → "持续 RSI" 悄无声息地死掉。所以 ratchet **每一代都 commit**，
-失败也是数据。
+**① 平台期会杀死 cron。** GitHub 会在公开仓库**连续 60 天无 commit 后禁用 scheduled workflow**。
+如果只在成功时 commit，进入平台期 → 没有 commit → cron 被关 → "持续 RSI" 悄无声息地死掉。
+所以 ratchet **每一代都 commit**，失败也是数据。
+
+**② 流水线挂了比平台期更隐蔽。** ①③ 之间任何一环出错（密钥没配、API 故障、runner OOM），
+运行根本走不到 ratchet——没有 commit，没有 history 记录，仪表盘还在展示上一次成功的代际，
+而 60 天的钟照常在走。**这个坑我踩了**：第一次部署后 `ANTHROPIC_API_KEY` 没设，26 次定时运行
+连续失败了 7 天，而仪表盘对此一无所知。
+
+修法是两条：
+- `scripts/budget.mjs` 做**预检**——缺密钥是一次干净的 skip，不是崩溃。确定性的配置错误
+  连续报 26 次红叉，信息量并不比报 1 次多，反而会淹没真正的回归。
+- `scripts/heartbeat.mjs` 在 `always()` 的 job 里跑：**没有产出代际的运行也要落地**。
+  相同原因折叠成一条并计数，最多每 20 小时提交一次——既让仓库保持活跃，又不刷屏。
+  仪表盘顶部因此会出现红色横幅和"循环健康"一栏，坏掉的循环再也藏不住。
 
 ## 部署
 
@@ -156,6 +174,7 @@ node arena/run.mjs --solver champion=agent/solver.js --noise        # 完整测�
 node scripts/propose.mjs --out .tmp/candidate --mock                # 不调模型，产出一个假候选
 node arena/run.mjs --solver champion=agent/solver.js --solver candidate=.tmp/candidate/solver.js --out .tmp/scores.json
 node scripts/ratchet.mjs --scores .tmp/scores.json --candidate .tmp/candidate --dry-run
+node scripts/budget.mjs                                              # 预检：会告诉你缺什么
 ANTHROPIC_API_KEY=… node scripts/propose.mjs --out .tmp/candidate --type L0   # 真的问一次模型
 npm run serve                                                        # http://localhost:8787 看仪表盘
 ```
@@ -181,12 +200,13 @@ scripts/
   protocol.md          L0 的固定系统提示（输出协议）
   meta-prompt.md       L1 的固定系统提示——递归的固定点
   ratchet.mjs          ③ 决定 / 应用 / 记录
-  budget.mjs           刹车与限速
+  heartbeat.mjs        ③b 记录没有产出代际的运行（跳过 / 故障）
+  budget.mjs           预检：密钥、刹车、限速
 docs/
   index.html           仪表盘（原生 SVG，零依赖）
   history.json         每一代的完整记录
 .github/workflows/
-  evolve.yml           主循环：propose → evaluate → ratchet → deploy
+  evolve.yml           主循环：propose → evaluate → ratchet → heartbeat → deploy
   pages.yml            人工改 docs/ 时重新发布
   smoke.yml            守卫 + 快速竞技场 + mock 流水线
 ```

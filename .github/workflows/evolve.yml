@@ -30,6 +30,7 @@ jobs:
       contents: read
     outputs:
       skip: ${{ steps.budget.outputs.skip }}
+      reason: ${{ steps.budget.outputs.reason }}
       gen_type: ${{ steps.propose.outputs.gen_type }}
     steps:
       - uses: actions/checkout@v4
@@ -39,8 +40,9 @@ jobs:
           cache: npm
       - run: npm ci --ignore-scripts
       - id: budget
-        name: Kill switch & daily budget
+        name: Preflight — secret, kill switch, daily budget
         env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MAX_GENS_PER_DAY: ${{ vars.MAX_GENS_PER_DAY || 4 }}
           MAX_COST_USD_PER_DAY: ${{ vars.MAX_COST_USD_PER_DAY || 0 }}
         run: node scripts/budget.mjs
@@ -128,9 +130,51 @@ jobs:
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin HEAD:"${GITHUB_REF_NAME}"
 
+  heartbeat:
+    name: "③b heartbeat (always)"
+    needs: [propose, evaluate, ratchet]
+    if: always()
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - id: hb
+        name: Record what this run did
+        run: |
+          if [ "${{ needs.propose.outputs.skip }}" = "true" ]; then
+            STATUS=skipped; STAGE=preflight; REASON="${{ needs.propose.outputs.reason }}"
+          elif [ "${{ needs.propose.result }}" != "success" ]; then
+            STATUS=failed; STAGE=propose; REASON="job ① propose ${{ needs.propose.result }} — see the run log"
+          elif [ "${{ needs.evaluate.result }}" != "success" ]; then
+            STATUS=failed; STAGE=evaluate; REASON="job ② evaluate ${{ needs.evaluate.result }} — see the run log"
+          elif [ "${{ needs.ratchet.result }}" != "success" ]; then
+            STATUS=failed; STAGE=ratchet; REASON="job ③ ratchet ${{ needs.ratchet.result }} — see the run log"
+          else
+            STATUS=ok; STAGE=""; REASON="generation completed"
+          fi
+          node scripts/heartbeat.mjs --status "$STATUS" ${STAGE:+--stage "$STAGE"} --reason "$REASON" \
+            --run-url "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+      - name: Commit the heartbeat
+        if: steps.hb.outputs.commit == 'true'
+        run: |
+          git config user.name "rsi-bot"
+          git config user.email "rsi-bot@users.noreply.github.com"
+          git add docs/history.json
+          git diff --cached --quiet && exit 0
+          git commit -F .tmp/commit-msg.txt
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
+
   deploy:
     name: "④ publish dashboard"
-    needs: ratchet
+    needs: [ratchet, heartbeat]
+    if: always() && needs.heartbeat.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       pages: write
