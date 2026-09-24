@@ -12,7 +12,8 @@
     "arena": "node arena/run.mjs --solver champion=agent/solver.js --out .tmp/scores.json",
     "arena:quick": "node arena/run.mjs --solver champion=agent/solver.js --quick --out .tmp/scores.json",
     "propose:mock": "node scripts/propose.mjs --out .tmp/candidate --mock",
-    "serve": "python3 -m http.server 8787 --directory docs"
+    "loop": "node scripts/loop.mjs",
+    "watch": "python3 -m http.server 8787 --bind 127.0.0.1"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",

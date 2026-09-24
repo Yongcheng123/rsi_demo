@@ -16,8 +16,8 @@ import { fileURLToPath } from 'node:url';
 import { guard } from '../arena/guard.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, '..');
 const args = parseArgs(process.argv.slice(2));
+const root = path.resolve(args.root || path.resolve(here, '..'));
 const OUT = path.resolve(args.out || '.tmp/candidate');
 const MOCK = args.mock === 'true';
 const MODEL = process.env.RSI_MODEL || 'claude-opus-5';

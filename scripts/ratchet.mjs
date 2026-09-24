@@ -12,8 +12,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const root = path.resolve(here, '..');
 const args = parseArgs(process.argv.slice(2));
+const root = path.resolve(args.root || path.resolve(here, '..'));
 const DRY = args['dry-run'] === 'true';
 const HIST = path.join(root, 'docs/history.json');
 const STRAT = path.join(root, 'agent/strategy.json');

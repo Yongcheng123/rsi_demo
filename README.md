@@ -165,19 +165,53 @@ gh workflow run evolve.yml --repo Yongcheng123/rsi_demo -f type=L0
 
 （各代间隔 6 小时，prompt cache 在这里没有复用价值，所以没有用。）
 
-## 本地运行
+## 本地运行 —— 看整条循环跑
+
+一条命令跑完 propose → evaluate → ratchet，和 CI 用的是同一批脚本、同样的顺序；
+CI 额外提供的只是 job 之间的权限隔离和密封容器。
 
 ```bash
 npm ci
-node arena/run.mjs --solver champion=agent/solver.js --quick        # 30 秒内跑通竞技场
-node arena/run.mjs --solver champion=agent/solver.js --noise        # 完整测量 + 基线自比噪声
-node scripts/propose.mjs --out .tmp/candidate --mock                # 不调模型，产出一个假候选
-node arena/run.mjs --solver champion=agent/solver.js --solver candidate=.tmp/candidate/solver.js --out .tmp/scores.json
-node scripts/ratchet.mjs --scores .tmp/scores.json --candidate .tmp/candidate --dry-run
-node scripts/budget.mjs                                              # 预检：会告诉你缺什么
-ANTHROPIC_API_KEY=… node scripts/propose.mjs --out .tmp/candidate --type L0   # 真的问一次模型
-npm run serve                                                        # http://localhost:8787 看仪表盘
+npm run watch                       # 另开一个终端：http://localhost:8787/.tmp/local/docs/
+npm run loop -- --gens 3 --mock     # 不需要密钥，把每个阶段都走一遍
 ```
+
+仪表盘每 3 秒自动刷新（线上 60 秒），所以你可以看着分数曲线一代一代长出来：
+
+```
+┌ gen 1
+│ ① propose    30ms  L0  solver 2.8 KB
+│    ↳ MOCK: replaced the quadratic dedupe with a Set-based O(n) pass.
+│      dedupe   · champion 0.99×/1.00× · candidate 7.49×/21.8× (3.9ms→180µs)
+│ ② evaluate  10.8s  candidate 1.439× vs champion 0.983×
+│ ③ ratchet    29ms  ACCEPT +46.4%
+└ champion 1.439×  ·  stall 0  ·  p_meta 0.2
+```
+
+真正调模型（密钥只存在于你自己的 shell，仓库里不写任何东西）：
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-…
+npm run loop -- --gens 3            # 每代 1–2 次调用，约 $0.3–0.7
+```
+
+| 选项 | 作用 |
+|---|---|
+| *(默认)* | **沙箱** `.tmp/local/`：复制一份 `agent/` 和 `docs/`，git 追踪的文件一个都不碰 |
+| `--keep` | 接着上次的沙箱继续跑，而不是重置 |
+| `--live` | 写真实的 `agent/` 和 `docs/history.json`（`git checkout agent docs` 可撤销） |
+| `--quick` | 竞技场单批次、少调用，一代约 10 秒（数字噪声大，只用来看流程） |
+| `--gens N` | 连跑 N 代 |
+| `--type L0\|L1` | 强制对象层 / 元层，默认 `auto`（按 `p_meta` 抽，连续被拒 3 次强制 L1） |
+
+单独跑某一环：
+
+```bash
+node arena/run.mjs --solver champion=agent/solver.js --noise     # 完整测量 + 基线自比噪声
+node scripts/budget.mjs                                          # 预检：会告诉你缺什么
+node scripts/ratchet.mjs --scores … --candidate … --dry-run      # 只判定，不落盘
+```
+
 
 ## 目录
 
@@ -202,6 +236,7 @@ scripts/
   ratchet.mjs          ③ 决定 / 应用 / 记录
   heartbeat.mjs        ③b 记录没有产出代际的运行（跳过 / 故障）
   budget.mjs           预检：密钥、刹车、限速
+  loop.mjs             本地驱动器：在沙箱里把三个阶段连跑 N 代
 docs/
   index.html           仪表盘（原生 SVG，零依赖）
   history.json         每一代的完整记录
