@@ -173,7 +173,17 @@
       "count": 1,
       "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36010625511",
       "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36010625511"
+    },
+    {
+      "ts": "2026-09-24T16:14:21.014Z",
+      "last_ts": "2026-09-24T16:14:21.014Z",
+      "status": "failed",
+      "stage": "evaluate",
+      "reason": "job ② evaluate failure — see the run log",
+      "count": 1,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36024881280",
+      "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36024881280"
     }
   ],
-  "last_heartbeat_commit": "2026-09-24T14:08:59.323Z"
+  "last_heartbeat_commit": "2026-09-24T16:14:21.014Z"
 }
