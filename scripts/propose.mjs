@@ -37,10 +37,14 @@ const EFFORT = process.env.RSI_EFFORT || 'high';
 const MAX_TOKENS = Number(process.env.RSI_MAX_TOKENS || 32000);
 const TIMEOUT_MS = Number(process.env.RSI_TIMEOUT_MS || 900000); // a local 14B model is slow
 // Runaway-reasoning circuit breaker: some reasoning models, given a large prompt, spiral in
-// the scratchpad and never start the answer. Measured on minimax-m3: 171,345 reasoning
-// characters against 8 characters of content before the upstream gave up, ~10 minutes and
-// ~170k tokens burned for nothing. Abort once the ratio is clearly hopeless.
-const MAX_REASONING_CHARS = Number(process.env.RSI_MAX_REASONING_CHARS || 120000);
+// the scratchpad and never start the answer. Measured on minimax-m3: 171,345 characters of
+// thinking against 8 of answer before the upstream gave up — ten minutes and ~170k tokens
+// for nothing. This aborts once the ratio is hopeless.
+//
+// The threshold is a BACKSTOP, not a target. The same model, on a run that succeeded, spent
+// 115,419 characters thinking before it produced a 27x solver, so a snug limit kills good
+// work: a 120k cap failed a CI run at 120,018. Set it well above what a healthy run needs.
+const MAX_REASONING_CHARS = Number(process.env.RSI_MAX_REASONING_CHARS || 300000);
 // Accept a base url with or without the /v1 suffix — both spellings are common in the wild.
 const RAW_BASE = (process.env.OPENAI_BASE_URL || 'https://api.openai.com/v1').replace(/\/+$/, '');
 const BASE_URL = /\/v\d+$/.test(RAW_BASE) ? RAW_BASE : RAW_BASE + '/v1';
