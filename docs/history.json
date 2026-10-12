@@ -681,6 +681,179 @@
       "stall_after": 0,
       "p_meta_after": 0.2,
       "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n_Version 3. Gen 1 swept every function with the textbook upgrade and gave\nus a 27× champion. We are now in a diminishing-returns regime: 7/8\ntasks are 10–260× faster than baseline; only `matMul` (1.16× holdout)\nsits near 1×. Every generation must clear a +5 % geomean bar against\nthe current champion. A `matMul`-only change needs to push it to\n≥ 1.71×; pairing a moderate `matMul` win with one small micro-win\nelsewhere is the safer route._\n\n## Diagnosis first — read before you code\n\nOpen `eval/bench.js` (or whatever harness is in scope) and the previous\n`agent/notes.md`. Confirm three things:\n\n1. **The `n` distribution on the holdout split for `matMul`.** Cache\n   tricks only pay off for large `n`; for `n` ≤ 64, raw loop overhead\n   and unrolling dominate. If the harness uses constant `n`, hard-code\n   the fastest routine for that size.\n2. **Input representation.** Are `matMul` inputs plain 2-D JS arrays or\n   `Float64Array`? The champion uses `Float64Array`; the baseline may\n   pass 2-D plain arrays that need flattening. If conversion uses\n   `Float64Array.from(a.flat())`, replace with a tight row-by-row\n   copy loop — V8 is slow on `Array.prototype.flat` into typed targets.\n3. **What changed last time.** A `matMul`-only rejection tells you\n   exactly the headroom on that lever and the noise band.\n\n## Priorities\n\n1. **`matMul` — the dominant lever. Target ≥ 1.7×.**\n   - Keep i-k-j loop order (already L1-friendly for row-major inputs).\n     Do **not** retry the i-j-k + naive-transpose recipe from gen 2 —\n     the transpose itself was the slow part.\n   - **Hand-unroll the inner loop 4× or 8×**, accumulating into four\n     or eight `c[i*n+j]` accumulators in parallel. This is the only\n     change with a realistic 30–50 % win on this benchmark; V8 will\n     pack the independent sums into double-pumped FP code.\n   - If `n` ≥ 256 on holdout, specialise: a 32×32 blocked kernel with\n     a hand-written micro-kernel. Otherwise stop at unrolling — the\n     blocked kernel only beats unrolled i-k-j when working sets spill\n     L1.\n2. **One micro-win, only if `matMul` is projected below 1.7×.** Pick\n   the one whose holdout distribution matches the change:\n   - `primesUpTo` → odd-only sieve (≈ 2× memory and ≈ 2× speed when\n     `n ≥ 100 000`).\n   - `topK` → branch on `k > n/2` and fall back to `arr.sort()`; heap\n     overhead loses to a single sort.\n   - `wordFreqTopK` → hand-written char-code tokenizer that avoids\n     building a `RegExp` per call.\n   - Do **not** touch `dedupe`, `twoSumCount`, `mergeIntervals`,\n     `lis` — regression risk outweighs any plausible constant-factor\n     win, and they are already ≥ 40× on holdout.\n\n## Geomean projection table\n\nUse this before submitting. Raise the row for any function you\nchanged; leave the rest at their current holdout speedup. The new\nproduct^(1/8) is the projected geomean; it must exceed the champion\nby > 5 %.\n\n| task            | holdout now | required for +5 % alone |\n|-----------------|-------------|-------------------------|\n| matMul          | 1.16×       | ≥ 1.71×                 |\n| topK            | 6.57×       | ≥ 8.2×                  |\n| wordFreqTopK    | 23.7×       | ≥ 29.5×                 |\n| primesUpTo      | 13.9×       | ≥ 17.3×                 |\n| matMul 1.5× + primesUpTo 1.2× | — | ≈ +5.6 % combined |\n| matMul 1.4× + topK 1.2× + primesUpTo 1.1× | — | ≈ +5.8 % combined |\n\nIf your plan does not project to ≥ +4 % on the geomean, do not\nsubmit — pick a larger lever.\n\n## Process discipline\n\n- **Change the minimum set of functions per generation.** A rejection\n  for \"no significant improvement\" on a single-function change\n  pinpoints the inert lever; a multi-function rewrite leaves you\n  guessing.\n- **Trace every edge case in the contract table by hand** before\n  submitting (empty input, `k = 0`, `k > n`, negatives, touching\n  intervals, strings mixed with numbers, `n = 0` matrices). Reuse\n  and never shrink the trace list from `notes.md`.\n- **NaN caveat still live.** `Set` / `Map` use SameValueZero; the\n  baseline uses strict equality. Holdout is ints and strings, so the\n  asymmetry is not exercised — do not widen it.\n- **Guard rules**: no string literals (regex literals or char codes\n  only); no module-top-level statements beyond `export function`; no\n  `console.*`, no `debugger`. The guard rejects the file outright.\n\n## What to record in `agent/notes.md`\n\nEvery generation appends a section with:\n\n- Function(s) changed, new algorithm in one sentence each.\n- Projected vs actual geomean delta and which task moved it.\n- For `matMul`: the inferred `n`, loop order, unroll factor tried,\n  and resulting holdout speedup.\n- Concrete next-step idea if this generation stalls. Likely\n  candidates — true 32×32 blocked kernel for `matMul` if `n ≥ 256`,\n  or shift to `topK` with quickselect if `matMul` is provably at the\n  FP ceiling for the benchmark size.\n===== END FILE =====\n"
+    },
+    {
+      "gen": 4,
+      "ts": "2026-10-12T06:19:22.951Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": true,
+      "reason": "accepted: 27.1358× vs champion 25.7831× (+5.2%)",
+      "delta": 0.0525,
+      "candidate": {
+        "score": 27.1358,
+        "score_train": 24.6888,
+        "correct": true,
+        "noise_pct": 11.55,
+        "bytes": 7120,
+        "tasks": {
+          "topK": {
+            "speedup": 6.9399,
+            "speedup_train": 20.0583,
+            "us": 211.8,
+            "base_us": 1470.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 20.1696,
+            "speedup_train": 23.8741,
+            "us": 209.1,
+            "base_us": 4309.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 94.4019,
+            "speedup_train": 64.4944,
+            "us": 54.9,
+            "base_us": 4985.3,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.6499,
+            "speedup_train": 113.2894,
+            "us": 80.4,
+            "base_us": 13454.4,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 19.6746,
+            "speedup_train": 14.1928,
+            "us": 1718,
+            "base_us": 33529.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 91.6687,
+            "speedup_train": 46.757,
+            "us": 134.7,
+            "base_us": 12370.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.8078,
+            "speedup_train": 2.6095,
+            "us": 798.7,
+            "base_us": 2272.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.8477,
+            "speedup_train": 22.7826,
+            "us": 727.4,
+            "base_us": 19559.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 25.7831,
+        "score_train": 23.362,
+        "correct": true,
+        "noise_pct": 42.1,
+        "bytes": 5688,
+        "tasks": {
+          "topK": {
+            "speedup": 7.0349,
+            "speedup_train": 19.9584,
+            "us": 211.5,
+            "base_us": 1478.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 20.569,
+            "speedup_train": 23.7876,
+            "us": 205.9,
+            "base_us": 4232.1,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 94.8291,
+            "speedup_train": 59.7613,
+            "us": 54.9,
+            "base_us": 4905.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 161.701,
+            "speedup_train": 113.3113,
+            "us": 82.6,
+            "base_us": 13391.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 16.2777,
+            "speedup_train": 12.7137,
+            "us": 1994.7,
+            "base_us": 33536.8,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 93.6489,
+            "speedup_train": 46.5096,
+            "us": 134,
+            "base_us": 12370.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 1.9306,
+            "speedup_train": 1.916,
+            "us": 1128.1,
+            "base_us": 2258,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 29.9065,
+            "speedup_train": 24.3611,
+            "us": 654.5,
+            "base_us": 19557.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 11.55,
+      "seed": 3851220863,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 83638,
+      "usage": {
+        "input_tokens": 7736,
+        "output_tokens": 42685,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "Generation 4 lifts the two best remaining levers. matMul gains a 1×4 j-tile on top of gen 3's already-transposed i-j-k loop, so a[i,k..k+7] is loaded once and feeds 32 independent FMAs across four c[i,j] accumulators that live in registers — a-load traffic drops 4× and V8's OoO pipeline gets far more work to overlap, projected to push matMul from 1.82× to ≈ 2.3-2.7× on holdout. primesUpTo swaps the gen-3 byte-packed odd sieve for a bit-packed odd sieve (8× smaller, 31 KB for n=500000, fully L1-resident instead of spilling 250 KB to L2); the RMW-per-mark overhead is overwhelmed by the L1 hit, projected to push primesUpTo from 25.8× to ≈ 35-65×. Even on the pessimistic end (matMul 2.0, primes 30) the combined geomean multiplier is ≈ 1.03, taking 28.27× to ≈ 29.3×; realistically we expect 30-32×, comfortably clearing the 29.69× gate. All edge cases (empty inputs, n=0/1/2 matrices, bit/byte index math, multiple-of-4 alignment) were traced by hand; the six unchanged exports remain identical to gen 3.\n\n---",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/38210959231",
+      "improver_changed": false,
+      "notes_changed": true,
+      "stall_after": 0,
+      "p_meta_after": 0.2
     }
   ],
   "runs": [
