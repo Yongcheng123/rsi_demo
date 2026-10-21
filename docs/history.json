@@ -854,6 +854,179 @@
       "notes_changed": true,
       "stall_after": 0,
       "p_meta_after": 0.2
+    },
+    {
+      "gen": 5,
+      "ts": "2026-10-21T17:32:11.019Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 32.2844× vs champion 32.0797× (needs > 33.684×, i.e. +5%)",
+      "delta": 0.0064,
+      "candidate": {
+        "score": 32.2844,
+        "score_train": 26.509,
+        "correct": true,
+        "noise_pct": 22.47,
+        "bytes": 9463,
+        "tasks": {
+          "topK": {
+            "speedup": 6.5196,
+            "speedup_train": 18.9407,
+            "us": 372.4,
+            "base_us": 2489,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 40.1102,
+            "speedup_train": 25.7763,
+            "us": 310.9,
+            "base_us": 12537.2,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 123.6894,
+            "speedup_train": 77.6265,
+            "us": 88.4,
+            "base_us": 8531.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 258.2588,
+            "speedup_train": 175.0017,
+            "us": 104.3,
+            "base_us": 27147.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 21.7739,
+            "speedup_train": 17.7139,
+            "us": 2668.2,
+            "base_us": 59304.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 90.1411,
+            "speedup_train": 38.9221,
+            "us": 196,
+            "base_us": 17684.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.356,
+            "speedup_train": 1.9797,
+            "us": 1797.7,
+            "base_us": 4299.7,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 30.5526,
+            "speedup_train": 26.938,
+            "us": 841.8,
+            "base_us": 27157.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 32.0797,
+        "score_train": 26.1058,
+        "correct": true,
+        "noise_pct": 20.74,
+        "bytes": 7120,
+        "tasks": {
+          "topK": {
+            "speedup": 6.6307,
+            "speedup_train": 18.3938,
+            "us": 370,
+            "base_us": 2487.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 40.4058,
+            "speedup_train": 26.0278,
+            "us": 311.2,
+            "base_us": 12589.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 120.565,
+            "speedup_train": 76.0169,
+            "us": 88.9,
+            "base_us": 8505.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.8677,
+            "speedup_train": 173.9681,
+            "us": 104.4,
+            "base_us": 27061.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 21.713,
+            "speedup_train": 16.7081,
+            "us": 2587.3,
+            "base_us": 58956.3,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 90.5324,
+            "speedup_train": 38.2583,
+            "us": 194.4,
+            "base_us": 17675.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.0931,
+            "speedup_train": 2.8499,
+            "us": 1365.5,
+            "base_us": 4303,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 21.9758,
+            "speedup_train": 18.7039,
+            "us": 1218.5,
+            "base_us": 27172.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 22.47,
+      "seed": 987938481,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 148693,
+      "usage": {
+        "input_tokens": 13629,
+        "output_tokens": 75709,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I replaced the odd-only prime sieve with a cache-sized segmented wheel-30 sieve that cuts candidate scanning and expensive bit read-modify-write marks, while upgrading matMul from a 1×4 to a cache-blocked 2×4 register tile that halves transposed-B loads and reuses each loaded B value across two rows. These changes target the two slowest tasks without touching the six stable exports, with the sequential accumulation, arbitrary-size tails, dense Float64Array output, and general prime boundaries preserved; the substantially lower prime work and improved matrix locality should provide the margin needed to clear the 5% acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39642644145",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 1,
+      "p_meta_after": 0.3
     }
   ],
   "runs": [
