@@ -1027,6 +1027,179 @@
       "notes_changed": false,
       "stall_after": 1,
       "p_meta_after": 0.3
+    },
+    {
+      "gen": 6,
+      "ts": "2026-10-21T21:53:34.765Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": true,
+      "reason": "accepted: 39.0346× vs champion 33.4247× (+16.8%)",
+      "delta": 0.1678,
+      "candidate": {
+        "score": 39.0346,
+        "score_train": 26.5751,
+        "correct": true,
+        "noise_pct": 65.63,
+        "bytes": 8060,
+        "tasks": {
+          "topK": {
+            "speedup": 33.5884,
+            "speedup_train": 18.4942,
+            "us": 64.5,
+            "base_us": 2473,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 42.3985,
+            "speedup_train": 26.845,
+            "us": 297.3,
+            "base_us": 12609.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 131.8308,
+            "speedup_train": 82.5148,
+            "us": 85.7,
+            "base_us": 11108.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 260.88,
+            "speedup_train": 174.472,
+            "us": 104,
+            "base_us": 26854.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 26.5517,
+            "speedup_train": 23.6246,
+            "us": 2294.1,
+            "base_us": 58971.5,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 90.5789,
+            "speedup_train": 39.2232,
+            "us": 193.6,
+            "base_us": 17663.1,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1637,
+            "speedup_train": 2.8664,
+            "us": 1357.5,
+            "base_us": 4297.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 14.464,
+            "speedup_train": 13.1039,
+            "us": 1860.3,
+            "base_us": 27143,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 33.4247,
+        "score_train": 27.737,
+        "correct": true,
+        "noise_pct": 13.97,
+        "bytes": 7120,
+        "tasks": {
+          "topK": {
+            "speedup": 6.6677,
+            "speedup_train": 18.9737,
+            "us": 366.2,
+            "base_us": 2469.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 41.518,
+            "speedup_train": 27.3815,
+            "us": 300.1,
+            "base_us": 12578.1,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 130.0349,
+            "speedup_train": 82.8924,
+            "us": 86.2,
+            "base_us": 11071.2,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.8643,
+            "speedup_train": 175.3667,
+            "us": 103.5,
+            "base_us": 26864.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.4177,
+            "speedup_train": 21.5465,
+            "us": 2253.1,
+            "base_us": 58906.7,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 91.5572,
+            "speedup_train": 39.217,
+            "us": 192.9,
+            "base_us": 17684.9,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1745,
+            "speedup_train": 2.8657,
+            "us": 1354,
+            "base_us": 4298.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 22.3709,
+            "speedup_train": 19.1569,
+            "us": 1184.7,
+            "base_us": 27142.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 65.63,
+      "seed": 1026882611,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 144553,
+      "usage": {
+        "input_tokens": 9512,
+        "output_tokens": 25130,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "I kept the proven matMul and six stable exports unchanged, added monotonic fast paths plus a hybrid heap/quickselect topK implementation, and replaced the bit-packed odd sieve with a proven 32 KiB segmented wheel-30 sieve. The conservative projection is about 33.93× versus the 33.68× acceptance threshold, with larger expected gains on the two sorted topK holdout patterns and the previously measured 30.6× prime-sieve performance.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39681588275",
+      "improver_changed": false,
+      "notes_changed": true,
+      "stall_after": 0,
+      "p_meta_after": 0.2
     }
   ],
   "runs": [
