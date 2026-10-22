@@ -75,13 +75,47 @@ function siftDown(heap, i, n) {
 }
 
 export function dedupe(arr) {
+  const len = arr.length;
+  if (len === 0) return [];
+
+  let min = Infinity;
+  let max = -Infinity;
+  let packed = true;
+  for (let i = 0; i < len; i++) {
+    const v = arr[i];
+    const iv = v | 0;
+    if (iv !== v) {
+      packed = false;
+      break;
+    }
+    if (iv < min) min = iv;
+    if (iv > max) max = iv;
+  }
+
+  const span = max - min + 1;
+  if (packed && span <= 131072) {
+    const seen = new Uint8Array(span);
+    const out = [];
+    for (let i = 0; i < len; i++) {
+      const index = (arr[i] | 0) - min;
+      if (seen[index] === 0) {
+        seen[index] = 1;
+        out.push(arr[i]);
+      }
+    }
+    return out;
+  }
+
   const seen = new Set();
   const out = [];
-  for (let i = 0; i < arr.length; i++) {
+  for (let i = 0; i < len; i++) {
     const v = arr[i];
-    if (!seen.has(v)) {
-      seen.add(v);
+    if (v !== v) {
       out.push(v);
+    } else {
+      const oldSize = seen.size;
+      seen.add(v);
+      if (seen.size !== oldSize) out.push(v);
     }
   }
   return out;
@@ -132,10 +166,42 @@ export function wordFreqTopK(text, k) {
     if (w.length === 0) continue;
     counts.set(w, (counts.get(w) || 0) + 1);
   }
+
+  if (k >= counts.size) {
+    const entries = [];
+    for (const entry of counts) entries.push(entry);
+    entries.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+    return entries;
+  }
+
+  const byCount = new Uint32Array(words.length + 1);
   const entries = [];
-  for (const e of counts) entries.push(e);
-  entries.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
-  return entries.slice(0, k);
+  let maxCount = 0;
+  for (const entry of counts) {
+    const count = entry[1];
+    entries.push(entry);
+    byCount[count]++;
+    if (count > maxCount) maxCount = count;
+  }
+
+  let cutoff = maxCount;
+  let needed = k;
+  while (needed > byCount[cutoff]) {
+    needed -= byCount[cutoff];
+    cutoff--;
+  }
+
+  const higher = [];
+  const tied = [];
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
+    if (entry[1] > cutoff) higher.push(entry);
+    else if (entry[1] === cutoff) tied.push(entry);
+  }
+
+  higher.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
+  tied.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
+  return higher.concat(tied.slice(0, needed));
 }
 
 export function twoSumCount(arr, target) {
@@ -221,74 +287,48 @@ export function matMul(a, b, n) {
 
 export function primesUpTo(n) {
   if (n < 2) return [];
-  const out = [2];
-  if (n < 3) return out;
-  out.push(3);
-  if (n < 5) return out;
-  out.push(5);
-  if (n < 7) return out;
 
   const root = Math.floor(Math.sqrt(n));
-  const base = [];
-  const mark = new Uint8Array(root + 1);
-  for (let p = 2; p <= root; p++) {
-    if (mark[p] !== 0) continue;
-    if (p >= 7) base.push(p);
+  const baseComposite = new Uint8Array(root + 1);
+  const bases = [];
+  const nextStarts = [];
+
+  for (let p = 3; p <= root; p += 2) {
+    if (baseComposite[p] !== 0) continue;
     const square = p * p;
     if (square <= root) {
-      for (let j = square; j <= root; j += p) mark[j] = 1;
+      const step = p + p;
+      for (let j = square; j <= root; j += step) baseComposite[j] = 1;
     }
+    bases.push(p);
+    nextStarts.push(Math.floor(square / 2));
   }
 
-  const residues = [1, 7, 11, 13, 17, 19, 23, 29];
-  const blocks = Math.floor(n / 30) + 1;
-  const segmentQ = 4096;
-  const segment = new Uint8Array(segmentQ * 8);
+  const total = Math.floor((n + 1) / 2);
+  const segmentSize = total < 16384 ? total : 16384;
+  const segment = new Uint8Array(segmentSize);
+  const out = [2];
 
-  for (let qLow = 0; qLow < blocks; qLow += segmentQ) {
-    let qHigh = qLow + segmentQ - 1;
-    if (qHigh >= blocks) qHigh = blocks - 1;
-    const segStart = qLow * 8;
-    const length = (qHigh - qLow + 1) * 8;
-    const low = qLow * 30 + 1;
-    segment.fill(1, 0, length);
+  for (let low = 0; low < total; low += segmentSize) {
+    let high = low + segmentSize;
+    if (high > total) high = total;
+    const length = high - low;
+    segment.fill(0, 0, length);
 
-    for (let pi = 0; pi < base.length; pi++) {
-      const p = base[pi];
-      const pBlock = Math.floor(p / 30);
-      const pBase = pBlock * 30;
-      const pResidue = p - pBase;
-      const step = p * 8;
-      for (let ri = 0; ri < 8; ri++) {
-        const r = residues[ri];
-        let m = pBase + r;
-        if (r < pResidue) m += 30;
-        let x = p * m;
-        if (x < low) x += Math.ceil((low - x) / (30 * p)) * 30 * p;
-        let idx = wheelIndex(x) - segStart;
-        for (; idx < length; idx += step) segment[idx] = 0;
+    for (let pi = 0; pi < bases.length; pi++) {
+      const p = bases[pi];
+      let offset = nextStarts[pi] - low;
+      while (offset < length) {
+        segment[offset] = 1;
+        offset += p;
       }
+      nextStarts[pi] = low + offset;
     }
 
-    for (let idx = 0; idx < length; idx++) {
-      if (segment[idx] === 0) continue;
-      const qBase = qLow + (idx >> 3);
-      const value = qBase * 30 + residues[idx & 7];
-      if (value > 1 && value <= n) out.push(value);
+    const first = low === 0 ? 1 : 0;
+    for (let i = first; i < length; i++) {
+      if (segment[i] === 0) out.push((low + i) * 2 + 1);
     }
   }
   return out;
-}
-
-function wheelIndex(x) {
-  const q = Math.floor(x / 30);
-  const r = x - q * 30;
-  if (r === 1) return q * 8;
-  if (r === 7) return q * 8 + 1;
-  if (r === 11) return q * 8 + 2;
-  if (r === 13) return q * 8 + 3;
-  if (r === 17) return q * 8 + 4;
-  if (r === 19) return q * 8 + 5;
-  if (r === 23) return q * 8 + 6;
-  return q * 8 + 7;
 }

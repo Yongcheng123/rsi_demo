@@ -3,66 +3,68 @@
 ## Contract and static constraints
 - Export exactly topK, dedupe, mergeIntervals, lis, wordFreqTopK,
   twoSumCount, matMul, and primesUpTo.
-- No imports, strings, templates, this, classes, typeof, eval, or top-level
+- No imports, string/template literals, this, classes, typeof, eval, or top-level
   mutable state.
 - Top-level declarations may only be exported/nonexported functions or numeric
-  or function constants; none are needed here.
+  or function constants.
 - Every call allocates its own working state and does not mutate arguments.
 
 ## Historical results
-- Gen 1 replaced every quadratic baseline algorithm with the standard
-  O(n log n) or O(n) alternative and established a 25.33× champion.
-- Gen 2 transposed matMul but only reached 28.16×, below the required 5%.
-- Gen 3 added an 8-way matMul inner unroll and odd-only prime sieve: 28.27×.
-- Gen 4 added the matMul 1x4 register tile and bit-packed odd sieve: accepted
-  at 27.14× in that run.
-- The latest champion is 32.0797×. Train/holdout speedups:
-  topK 18.4/6.63, dedupe 26.0/40.4, merge 76.0/121,
-  lis 174/260, word frequency 16.7/21.7, two-sum 38.3/90.5,
-  matMul 2.85/3.09, primes 18.7/22.0.
-- Gen 5 changed matMul to a 2x4 tile and primes to segmented wheel-30.
-  It scored 32.2844×, only +0.6% rather than the required +5%.
-  Its wheel sieve reached 30.6× primes, but matMul regressed to 2.36×.
-- Lesson: retain the 1x4 matMul kernel; combine independent stable levers
-  instead of forcing another matrix register tile.
+- Gen 1 established the standard fast algorithms and a roughly 25× champion.
+- Gen 2's transposed matMul and Gen 3's unroll were insufficient alone.
+- Gen 4 established the useful 1x4 matMul register tile and odd-only sieve.
+- Gen 5's 2x4 matMul tile regressed matMul from about 3.09× to 2.36×.
+- Gen 6 added topK monotonic and hybrid selection paths and segmented wheel-30.
+- Gen 6 was accepted at 39.0346× after a 33.4247× comparison champion.
 
-## Generation 6 changes
-- topK now recognizes monotonic input in one early-exiting scan. Nondecreasing
-  input returns the reversed suffix; nonincreasing input returns its prefix.
-- For unsorted input and k <= n/16, topK retains the low-constant min-heap.
-  Larger k uses a local Hoare quickselect and sorts only the selected prefix.
-  This removes repeated heap replacements on ascending input and reduces the
-  asymptotic cost for large k without regressing small-k or duplicate-heavy data.
-- primesUpTo now uses a 32 KiB segmented wheel-30 sieve. Candidates use only
-  residues 1,7,11,13,17,19,23,29 modulo 30. Base primes through sqrt(n) mark
-  each residue progression in steps of 30p, equivalent to 8p wheel entries.
-- This scans about 8/30 rather than 1/2 of all integers and uses direct byte
-  stores instead of odd-bit read-modify-write marks.
-- The gen-5 wheel implementation measured 22.0 -> 30.6× primes. Even a
-  conservative topK gain to 7.5× projects:
-  32.0797 * (7.5/6.63)^(1/8) * (30.6/22)^(1/8) = 33.93×, +5.8%.
-- Expected topK range is 8-15× because both holdout sorted patterns now avoid
-  sorting or heap replacement; projected total is approximately 34-36×.
+## Latest champion measurements
+- Holdout speedups: topK 33.6×, dedupe 42.4×, merge 132×, lis 261×,
+  word frequency 26.6×, two-sum 90.6×, matMul 3.16×, primes 14.5×.
+- Acceptance therefore requires more than 40.99× in the paired run.
+- Despite an isolated gen-5 wheel measurement of 30.6×, the sealed gen-6 run
+  measured the wheel at only 14.5× holdout and 13.1× train.
+
+## Generation 7 changes
+- dedupe now recognizes signed 32-bit integer runs and sparse integer ranges.
+  A min/max pass selects a Uint8Array stamp table, and the output pass preserves
+  first occurrence while avoiding all Map/Set hashing.
+- The general dedupe fallback now performs one Set probe per value instead of
+  has followed by add. NaN is emitted separately because the contract uses ===.
+- wordFreqTopK now histograms word counts, finds the kth frequency, sorts only
+  entries above that cutoff plus the lexicographic cutoff group, and avoids
+  sorting the whole vocabulary with a compound comparator when k is small.
+- primesUpTo now uses a cache-sized segmented odd-only sieve. It advances each
+  base-prime cursor across segments, avoiding repeated division and wheel-index
+  calculations while retaining a compact working set.
+- topK, mergeIntervals, lis, twoSumCount, and matMul are unchanged.
+
+## Performance projection
+- Conservative ratios are dedupe 1.50×, word frequency 1.15×, and primes 1.25×.
+  Their product is 2.16, corresponding to a 1.105× geomean lift and about
+  43.1× overall, roughly 10.5% above the 39.0346× champion.
+- Dedupe alone should exceed 1.5×: numeric train inputs have a 3001-wide range,
+  while the string fallback avoids two Set hash-table probes per occurrence.
+- The prior bit-packed/odd sieve measured 18.7× train and 22.0× holdout before
+  the wheel replacement, so restoring an optimized odd sieve should move primes.
+
+## matMul status
+- Holdout sizes remain 64, 80, 112, and 128 with plain arrays or Float64Array.
+- The unchanged proven kernel transposes B, uses i-j-k order, a 1x4 j-tile,
+  and an 8-way k-unroll. Do not replace it without an isolated measured win.
 
 ## Edge-case trace retained
-- topK: empty input, k<=0, k>=n, negatives, duplicates, all-equal,
-  ascending, descending, and partially ordered arrays.
-- dedupe: empty input, repeated integers, first occurrence, and mixed
-  numbers/strings. Set SameValueZero versus === remains only a NaN caveat;
-  hidden inputs are integers and strings.
-- mergeIntervals: empty, unsorted, nested, duplicate, touching endpoints,
-  one giant interval, sorted output, fresh pair arrays, and no input mutation.
+- topK: empty, k<=0, k>=n, negatives, duplicates, equal, ascending, descending.
+- dedupe: empty, repeated integers, negative offsets, broad/nonintegral values,
+  strings, mixed number/string arrays, -0/0, and strict NaN behavior.
+- mergeIntervals: unsorted, nested, duplicate, touching, giant, and no mutation.
 - lis: empty, negatives, equals, descending, nearly sorted, and strictness.
-- wordFreqTopK: empty/whitespace-only text, leading/trailing/running mixed
-  whitespace, repeated exact words, ties, k<=0, and k above vocabulary size.
-- twoSumCount: empty, all zeros, negatives, huge values, and duplicate pairs.
-- matMul: n=0, n=1, n=2/3 tails, and holdout n=64/80/112/128. Both j and k
-  tail loops remain; output is a dense Float64Array and inputs are unchanged.
-- primesUpTo: n<2, 2, 3, 5, 6, 7, 30, 31, 49, prime squares, products such as
-  77/119/143, and the final partial 30-block. Only 1 is excluded; 2/3/5 are
-  emitted separately and every other emitted value is coprime to 30.
+- word frequency: empty/whitespace-only, mixed whitespace runs, exact words,
+  count ties, lexical ties, k<=0, and k above vocabulary size.
+- two-sum: empty, negatives, huge ranges, all zeros, and duplicate pairs.
+- matMul: n=0/1, j and k tails, both input representations, dense output.
+- primes: n<2, 2/3/5, prime squares, odd composites, partial odd segments,
+  all base-prime crossings, and ascending output through the final odd <= n.
 
 ## Next lever
-- If accepted, topK or the wheel sieve can be tuned separately by segment
-  size and select threshold. Avoid changing matMul unless a new kernel beats
-  the proven 1x4 tile on isolated paired benchmarks.
+- If accepted, tune the odd-prime segment between 8 KiB and 16 KiB in isolation.
+- Keep matMul stable; its proven tile is already 3.16× and is not needed to pass.
