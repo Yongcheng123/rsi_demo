@@ -1373,6 +1373,184 @@
       "notes_changed": true,
       "stall_after": 0,
       "p_meta_after": 0.2
+    },
+    {
+      "gen": 8,
+      "ts": "2026-10-22T21:50:12.870Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: topK: holdout: wrong output (call 9; expected [49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,4...) (+3 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 52.61,
+        "bytes": 12361,
+        "tasks": {
+          "topK": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 55.9,
+            "base_us": 2485.9,
+            "correct": false
+          },
+          "dedupe": {
+            "speedup": 80.0695,
+            "speedup_train": 92.9668,
+            "us": 154.2,
+            "base_us": 12581.6,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 129.1342,
+            "speedup_train": 81.128,
+            "us": 85.9,
+            "base_us": 10657.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.8505,
+            "speedup_train": 175.3598,
+            "us": 104.2,
+            "base_us": 26905.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 30.1644,
+            "speedup_train": 24.5631,
+            "us": 1946.7,
+            "base_us": 58915.8,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 583.9879,
+            "speedup_train": 38.4889,
+            "us": 29.7,
+            "base_us": 17672.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.0483,
+            "speedup_train": 2.9127,
+            "us": 1061.8,
+            "base_us": 4302.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 37.2243,
+            "speedup_train": 29.1201,
+            "us": 721.2,
+            "base_us": 27162.5,
+            "correct": true
+          }
+        },
+        "failures": [
+          "topK: holdout: wrong output (call 9; expected [49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,4...)",
+          "topK: holdout: wrong output (call 13; expected [49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,4...)",
+          "topK: holdout: wrong output (call 9; expected [49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,49,4...)",
+          "topK: edge: [[-1,-5,0],2] → expected [0,-1]"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 45.2986,
+        "score_train": 33.0314,
+        "correct": true,
+        "noise_pct": 81.46,
+        "bytes": 8782,
+        "tasks": {
+          "topK": {
+            "speedup": 29.0975,
+            "speedup_train": 19.0692,
+            "us": 73.5,
+            "base_us": 2470,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 83.111,
+            "speedup_train": 93.7582,
+            "us": 151.2,
+            "base_us": 12534.7,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 128.4362,
+            "speedup_train": 83.0517,
+            "us": 86.3,
+            "base_us": 10634.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.8027,
+            "speedup_train": 173.9322,
+            "us": 103.1,
+            "base_us": 26883.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 31.0733,
+            "speedup_train": 23.823,
+            "us": 1931.5,
+            "base_us": 58799.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 91.8192,
+            "speedup_train": 39.2107,
+            "us": 192.2,
+            "base_us": 17677.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1765,
+            "speedup_train": 2.8547,
+            "us": 1356.2,
+            "base_us": 4305.2,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.2419,
+            "speedup_train": 20.5773,
+            "us": 1098.4,
+            "base_us": 27134.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 52.61,
+      "seed": 1204647212,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 143900,
+      "usage": {
+        "input_tokens": 9092,
+        "output_tokens": 33177,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "I targeted the largest reliable headroom with bounded-range two-sum counting and a compact wheel-6 prime sieve, while adding low-risk allocation and dispatch improvements to topK, word-frequency selection, and matMul. The unchanged fallback paths preserve behavior on sparse, wide, fractional, and large-range inputs, and the conservative task-ratio projection is about a 9% geomean lift, enough to clear the 5% acceptance bar.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39859352876",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 1,
+      "p_meta_after": 0.3
     }
   ],
   "runs": [
