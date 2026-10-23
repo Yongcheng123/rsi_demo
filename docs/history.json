@@ -2130,7 +2130,17 @@
       "count": 28,
       "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/36029047059",
       "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39774977485"
+    },
+    {
+      "ts": "2026-10-23T21:29:04.661Z",
+      "last_ts": "2026-10-23T21:29:04.661Z",
+      "status": "skipped",
+      "stage": "preflight",
+      "reason": "4 generations in the last 24h ≥ MAX_GENS_PER_DAY=4",
+      "count": 1,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40027054502",
+      "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40027054502"
     }
   ],
-  "last_heartbeat_commit": "2026-10-22T12:08:37.397Z"
+  "last_heartbeat_commit": "2026-10-23T21:29:04.661Z"
 }
