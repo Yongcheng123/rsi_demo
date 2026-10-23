@@ -1904,6 +1904,180 @@
       "notes_changed": false,
       "stall_after": 3,
       "p_meta_after": 0.5
+    },
+    {
+      "gen": 11,
+      "ts": "2026-10-23T17:22:38.309Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": true,
+      "reason": "accepted: 51.1252× vs champion 39.8134× (+28.4%)",
+      "delta": 0.2841,
+      "candidate": {
+        "score": 51.1252,
+        "score_train": 40.8447,
+        "correct": true,
+        "noise_pct": 81.53,
+        "bytes": 9471,
+        "tasks": {
+          "topK": {
+            "speedup": 49.0564,
+            "speedup_train": 19.9782,
+            "us": 38.4,
+            "base_us": 1473.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 52.4341,
+            "speedup_train": 83.9847,
+            "us": 83.1,
+            "base_us": 4261.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 94.8806,
+            "speedup_train": 63.6346,
+            "us": 53.2,
+            "base_us": 4751.3,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 164.1708,
+            "speedup_train": 113.2488,
+            "us": 81.4,
+            "base_us": 13412.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.1102,
+            "speedup_train": 20.8391,
+            "us": 1206.1,
+            "base_us": 33130.5,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 528.4784,
+            "speedup_train": 457.4718,
+            "us": 23.2,
+            "base_us": 12364.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.8425,
+            "speedup_train": 2.5771,
+            "us": 789.7,
+            "base_us": 2250.9,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 30.8826,
+            "speedup_train": 26.0749,
+            "us": 628.9,
+            "base_us": 19475.5,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 39.8134,
+        "score_train": 30.4367,
+        "correct": true,
+        "noise_pct": 75.7,
+        "bytes": 8782,
+        "tasks": {
+          "topK": {
+            "speedup": 37.1935,
+            "speedup_train": 20.1034,
+            "us": 40,
+            "base_us": 1470.8,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 55.7653,
+            "speedup_train": 83.6358,
+            "us": 79.8,
+            "base_us": 4432.2,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 94.7429,
+            "speedup_train": 64.1534,
+            "us": 54.2,
+            "base_us": 4732.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.9317,
+            "speedup_train": 113.1989,
+            "us": 80.5,
+            "base_us": 13333.8,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.0113,
+            "speedup_train": 18.8458,
+            "us": 1284.6,
+            "base_us": 33860.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 91.5087,
+            "speedup_train": 47.2558,
+            "us": 134.7,
+            "base_us": 12361.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.7438,
+            "speedup_train": 2.5952,
+            "us": 843.8,
+            "base_us": 2291.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 31.206,
+            "speedup_train": 26.0986,
+            "us": 626,
+            "base_us": 19550.5,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 81.53,
+      "seed": 1338683020,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 82783,
+      "usage": {
+        "input_tokens": 14766,
+        "output_tokens": 29160,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I isolated the change to twoSumCount, adding an exact all-equal shortcut and a bounded-range Uint32Array counting path that replaces Map hashing for dense integer inputs while preserving the proven sparse fallback and exact i<j duplicate-pair semantics. The previously measured equivalent bounded strategy improved two-sum from 90.1× to 359× on holdout, projecting an unchanged-task aggregate near 54.1× versus the 47.8× acceptance threshold, while avoiding every unrelated change implicated in prior rejected generations.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39993388684",
+      "improver_changed": true,
+      "notes_changed": true,
+      "stall_after": 0,
+      "p_meta_after": 0.2,
+      "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n## Current state\n\n- The sealed champion is about 45.4–45.5× geomean. Acceptance requires beating the actual measured champion by over 5%, roughly 47.8×. Aim for at least 8% headroom to absorb noise.\n- Current holdout speedups: topK 35.6×, dedupe 77.4×, merge 125×, lis 260×, wordFreqTopK 29.9×, twoSumCount 90.1×, matMul 3.18×, primesUpTo 24.1×.\n- Current train speedups are 18.9×, 90.7×, 81.1×, 175×, 21.5×, 37.6×, 2.86×, and 19.8× respectively. Forecast with the weaker split, never the best split.\n- The notes’ 39.03× champion is stale gen-6 data. The matMul 1.16× and primes 13.9× figures in the old strategy are also stale.\n- Read `agent/solver.js`, `agent/notes.md`, the function spec, and the visible harness before changing anything. Do not edit the harness or evaluator.\n\n## Required workflow\n\n1. Copy the current solver to a temporary oracle before editing. Keep its source unchanged outside the final `agent/solver.js`.\n2. Run the provided benchmark on the unchanged champion. Establish train and holdout timings with warmup and repeated runs.\n3. Profile source-level costs and inspect the visible input shapes. Never assume a holdout size or representation is universal.\n4. Develop one isolated candidate at a time. Compare candidate and oracle in the same process, preferably alternating runs to reduce JIT/GC drift; use medians rather than one run.\n5. Differential-test before benchmarking. Submit only a candidate whose projected geomean clears the bar robustly.\n\n## Lessons from recent generations\n\n- Gen 2, gen 5, and gen 9 failed the significance bar. Textbook transposes, extra blocking, and bounded two-sum machinery are not automatic wins.\n- Gen 5’s 2×4 matMul tile regressed. The proven matMul kernel is transposed B, i-j-k, a 1×4 j-tile, and an 8-way k-unroll.\n- Gen 8 lost duplicate-heavy `topK`; gen 10 broke `primesUpTo` on its first call. Those are mandatory regression cases.\n- Multiple unrelated rewrites made failures hard to isolate. Keep each change independently testable and verify the combined candidate too.\n- Accepted gains came from removing real algorithmic or allocation work, not from cosmetic dispatch changes.\n\n## Acceptance arithmetic\n\n- If changed tasks improve by factors `r1, r2, ...`, the aggregate multiplier is `(r1*r2*...)**(1/8)`.\n- Therefore one changed task must improve by at least 1.477×; two tasks need a product above 1.477, e.g. 1.25× and 1.20×; three 1.15× gains also suffice.\n- Sole-task targets from current holdout values are: topK 52.6×, dedupe 114.4×, merge 184.7×, lis 384.2×, wordFreqTopK 44.2×, twoSumCount 133.2×, matMul 4.70×, primesUpTo 35.6×.\n- Do not submit a projection barely over 5%. If no credible lever reaches the bar, select another lever rather than adding no-op “optimizations.”\n\n## Lever order\n\n1. **primesUpTo and wordFreqTopK:** lowest-risk places for focused wins.\n   - For primes, retain the exact proven segmented odd-only kernel. Isolate segment-size, cursor-arithmetic, marking-loop, or allocation changes. Do not reuse gen-10’s template construction without complete boundary tests.\n   - For word frequency, isolate direct whitespace scanning, presized counts, cutoff selection, or output allocation while preserving tokenization and tie order exactly.\n2. **matMul:** largest numerical headroom, but expensive to improve safely. Keep the proven kernel unless an isolated candidate exceeds 4.70× holdout and 4.26× train. Specialize only by representation or size when semantics are identical, and preserve each output element’s floating-point summation order.\n3. **topK:** retain the proven monotonic/selection hybrid. Change only one stage at a time, such as selection, partitioning, or result copying. Test duplicate-heavy and boundary-sized inputs especially carefully.\n4. Avoid mergeIntervals, lis, dedupe, and twoSumCount unless profiling exposes obvious removable overhead. They are already fast, and the twoSum experiment failed.\n\n## Correctness gate\n\n- Differential-test random inputs and the complete retained edge-case trace in `agent/notes.md` against the oracle. Never delete a trace case because visible data misses it.\n- Include prime squares, segment crossings, final partial segments, and `n < 2`; include duplicate-heavy topK and every `k` boundary.\n- For matMul, cover zero/one dimensions, j/k tails, both visible representations, and unchanged accumulation order.\n- Check exact output ordering, numeric signs including negative zero, and strict-equality/NaN behavior where relevant.\n- Verify arguments are not mutated and every call creates its own working state. No cross-call caching.\n- Do not specialize behavior to visible values, encode known answers, or let train-only distributions alter semantics.\n\n## Sandbox rules\n\n- Preserve exactly the required export set.\n- No imports, string/template literals, `this`, classes, `typeof`, `eval`, top-level mutable state, `console.*`, or `debugger`.\n- Top-level declarations may only be required exported/nonexported functions or numeric/function constants. No top-level calls.\n- Use numeric character codes or permitted regex constructs. Do not access hidden evaluator data or modify benchmark files.\n\n## Memory and submission\n\n- Append to `agent/notes.md`: exact algorithm changed, per-task train/holdout factors, projected and measured aggregate, correctness cases run, failed variants, and one concrete next lever.\n- Keep the historical record and edge trace; distinguish measured results from projections and replace stale numbers only after a real benchmark.\n- Before submitting, confirm: guard compliance, exact exports, no argument mutation, differential tests passed, stable factor measurements, aggregate product over 1.477, and notes updated.\n===== END FILE =====\n"
     }
   ],
   "runs": [

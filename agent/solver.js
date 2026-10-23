@@ -205,9 +205,40 @@ export function wordFreqTopK(text, k) {
 }
 
 export function twoSumCount(arr, target) {
+  const len = arr.length;
+  if (len < 2) return 0;
+
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = 0; i < len; i++) {
+    const x = arr[i];
+    if (x < min) min = x;
+    if (x > max) max = x;
+  }
+
+  if (min === max) {
+    if (min + min === target) return len * (len - 1) / 2;
+    return 0;
+  }
+
+  const span = max - min + 1;
+  if (span <= len * 4) {
+    const table = new Uint32Array(span);
+    let result = 0;
+    for (let i = 0; i < len; i++) {
+      const x = arr[i];
+      const complementIndex = target - x - min;
+      if (complementIndex >= 0 && complementIndex < span) {
+        result += table[complementIndex];
+      }
+      table[x - min]++;
+    }
+    return result;
+  }
+
   const counts = new Map();
   let result = 0;
-  for (let i = 0; i < arr.length; i++) {
+  for (let i = 0; i < len; i++) {
     const x = arr[i];
     const need = target - x;
     const c = counts.get(need);
