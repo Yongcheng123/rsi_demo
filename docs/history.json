@@ -1551,6 +1551,179 @@
       "notes_changed": false,
       "stall_after": 1,
       "p_meta_after": 0.3
+    },
+    {
+      "gen": 9,
+      "ts": "2026-10-23T05:10:00.131Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 42.9261× vs champion 42.3885× (needs > 44.508×, i.e. +5%)",
+      "delta": 0.0127,
+      "candidate": {
+        "score": 42.9261,
+        "score_train": 39.7616,
+        "correct": true,
+        "noise_pct": 275.16,
+        "bytes": 10078,
+        "tasks": {
+          "topK": {
+            "speedup": 35.0819,
+            "speedup_train": 19.2418,
+            "us": 56.4,
+            "base_us": 2030.4,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 64.538,
+            "speedup_train": 90.2781,
+            "us": 122.8,
+            "base_us": 8103.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 114.5543,
+            "speedup_train": 74.8706,
+            "us": 75.7,
+            "base_us": 8139.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 209.2254,
+            "speedup_train": 129.0665,
+            "us": 92.5,
+            "base_us": 19445.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 20.2435,
+            "speedup_train": 19.5108,
+            "us": 1683.2,
+            "base_us": 36181.8,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 134.2512,
+            "speedup_train": 298.0996,
+            "us": 33.9,
+            "base_us": 15288.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.9468,
+            "speedup_train": 2.8491,
+            "us": 1189,
+            "base_us": 3509.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.5274,
+            "speedup_train": 22.4601,
+            "us": 887.6,
+            "base_us": 23751.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 42.3885,
+        "score_train": 30.7997,
+        "correct": true,
+        "noise_pct": 34.36,
+        "bytes": 8782,
+        "tasks": {
+          "topK": {
+            "speedup": 39.8047,
+            "speedup_train": 19.3321,
+            "us": 50.9,
+            "base_us": 2030.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 71.3316,
+            "speedup_train": 90.1764,
+            "us": 114.4,
+            "base_us": 8101.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 112.3547,
+            "speedup_train": 74.1922,
+            "us": 76.4,
+            "base_us": 8092.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 205.7335,
+            "speedup_train": 127.3081,
+            "us": 92.1,
+            "base_us": 18891.4,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 23.3302,
+            "speedup_train": 19.048,
+            "us": 1654,
+            "base_us": 36033.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 89.4267,
+            "speedup_train": 39.988,
+            "us": 169.9,
+            "base_us": 15257.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.8728,
+            "speedup_train": 2.8539,
+            "us": 1183.5,
+            "base_us": 3518.9,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.4958,
+            "speedup_train": 22.6238,
+            "us": 885.8,
+            "base_us": 23741.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 275.16,
+      "seed": 1248572275,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "arena_ms": 112088,
+      "usage": {
+        "input_tokens": 14418,
+        "output_tokens": 35035,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only twoSumCount, retaining all seven proven gen-7 kernels to avoid the rejected topK experiment. The new path adds an exact all-equal shortcut and a conservative signed-32-bit frequency table for ranges up to four times the input length, with immediate Map fallback for sparse or non-integer cases; the prior sealed bounded-table implementation measured about 6.36× faster on the two-sum holdout, projecting an aggregate score near 56× with ample margin over the 47.6247× gate.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39903277939",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 2,
+      "p_meta_after": 0.4
     }
   ],
   "runs": [
