@@ -1724,6 +1724,186 @@
       "notes_changed": false,
       "stall_after": 2,
       "p_meta_after": 0.4
+    },
+    {
+      "gen": 10,
+      "ts": "2026-10-23T12:01:15.186Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...) (+10 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 37.49,
+        "bytes": 11433,
+        "tasks": {
+          "topK": {
+            "speedup": 41.4017,
+            "speedup_train": 18.7492,
+            "us": 58.1,
+            "base_us": 2478.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 81.2436,
+            "speedup_train": 90.6226,
+            "us": 154.8,
+            "base_us": 12568.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 127.8927,
+            "speedup_train": 90.1143,
+            "us": 85.4,
+            "base_us": 8282.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 258.9021,
+            "speedup_train": 175.1168,
+            "us": 104.5,
+            "base_us": 26967,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 6.8585,
+            "speedup_train": 5.1776,
+            "us": 8587.7,
+            "base_us": 58985.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 358.9119,
+            "speedup_train": 320.6046,
+            "us": 47.8,
+            "base_us": 17708.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1597,
+            "speedup_train": 2.858,
+            "us": 1360.1,
+            "base_us": 4303.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 968.1,
+            "base_us": 27142.2,
+            "correct": false
+          }
+        },
+        "failures": [
+          "primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 45.5141,
+        "score_train": 32.0582,
+        "correct": true,
+        "noise_pct": 81.54,
+        "bytes": 8782,
+        "tasks": {
+          "topK": {
+            "speedup": 35.5567,
+            "speedup_train": 18.9328,
+            "us": 72.7,
+            "base_us": 2487,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 77.3797,
+            "speedup_train": 90.6817,
+            "us": 156.3,
+            "base_us": 12541.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 124.7377,
+            "speedup_train": 81.1315,
+            "us": 86.8,
+            "base_us": 8377.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.8125,
+            "speedup_train": 174.8002,
+            "us": 103.6,
+            "base_us": 27047.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 29.8952,
+            "speedup_train": 21.4962,
+            "us": 2065.6,
+            "base_us": 59154.3,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 90.0547,
+            "speedup_train": 37.5962,
+            "us": 196.6,
+            "base_us": 17712,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1816,
+            "speedup_train": 2.8587,
+            "us": 1360.5,
+            "base_us": 4349.4,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.1102,
+            "speedup_train": 19.832,
+            "us": 1127.2,
+            "base_us": 27157.3,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 37.49,
+      "seed": 1293784184,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 147632,
+      "usage": {
+        "input_tokens": 14114,
+        "output_tokens": 47962,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I combined the previously measured 1.50× bounded-frequency two-sum improvement with three independent allocation and traversal reductions: direct whitespace scanning for word counts, a periodic small-prime template plus dense output storage for segmented prime generation, and output-only interval allocation after sorting references. The proven topK, dedupe, LIS, and matMul kernels remain untouched, while exhaustive boundary reasoning preserves strict ordering, duplicate, whitespace, interval-touching, and prime-boundary semantics; the conservative improvement product is intentionally well above the 1.477 acceptance requirement.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/39948489848",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 3,
+      "p_meta_after": 0.5
     }
   ],
   "runs": [
