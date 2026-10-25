@@ -2251,6 +2251,179 @@
       "notes_changed": false,
       "stall_after": 1,
       "p_meta_after": 0.3
+    },
+    {
+      "gen": 13,
+      "ts": "2026-10-25T11:50:51.410Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 45.2458× vs champion 47.401× (needs > 49.771×, i.e. +5%)",
+      "delta": -0.0455,
+      "candidate": {
+        "score": 45.2458,
+        "score_train": 37.3761,
+        "correct": true,
+        "noise_pct": 39.48,
+        "bytes": 10372,
+        "tasks": {
+          "topK": {
+            "speedup": 37.9192,
+            "speedup_train": 20.1699,
+            "us": 41.4,
+            "base_us": 1572.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 51.7463,
+            "speedup_train": 79.9316,
+            "us": 90.1,
+            "base_us": 4735.7,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 100.0007,
+            "speedup_train": 63.5705,
+            "us": 57,
+            "base_us": 5079.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 134.3673,
+            "speedup_train": 92.2844,
+            "us": 103,
+            "base_us": 13931.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 18.6548,
+            "speedup_train": 14.1652,
+            "us": 2008.4,
+            "base_us": 36772.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 416.0825,
+            "speedup_train": 426.477,
+            "us": 31.5,
+            "base_us": 13086,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.8525,
+            "speedup_train": 2.6189,
+            "us": 825.9,
+            "base_us": 2388.3,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 30.0884,
+            "speedup_train": 25.4514,
+            "us": 676.4,
+            "base_us": 20450.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 47.401,
+        "score_train": 38.228,
+        "correct": true,
+        "noise_pct": 16.15,
+        "bytes": 9471,
+        "tasks": {
+          "topK": {
+            "speedup": 40.4914,
+            "speedup_train": 20.3839,
+            "us": 37.5,
+            "base_us": 1579.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 52.0724,
+            "speedup_train": 79.2011,
+            "us": 90.8,
+            "base_us": 4675.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 100.0725,
+            "speedup_train": 62.0936,
+            "us": 59.8,
+            "base_us": 5087.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 162.133,
+            "speedup_train": 113.8639,
+            "us": 85.1,
+            "base_us": 13916.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 20.7961,
+            "speedup_train": 14.0079,
+            "us": 1733.6,
+            "base_us": 35835.5,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 436.5535,
+            "speedup_train": 432.5695,
+            "us": 29.3,
+            "base_us": 13062.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 2.7834,
+            "speedup_train": 2.5853,
+            "us": 850.2,
+            "base_us": 2436.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 29.482,
+            "speedup_train": 25.507,
+            "us": 675.8,
+            "base_us": 20406.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 39.48,
+      "seed": 1535203791,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 89501,
+      "usage": {
+        "input_tokens": 9881,
+        "output_tokens": 37733,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "Generation 13 keeps the five proven champion kernels unchanged and targets three\nmeasurable sources of avoidable work: word-frequency counting now uses mutable\ncount holders and a k-element selection heap instead of repeatedly setting\ncounts and sorting the whole vocabulary, LIS uses a typed-array tail buffer\nwith an append fast path and a constant-time descending-sequence exit, and\ninterval merging avoids copying every input pair while retaining ascending\ntouching semantics. These changes are independent, preserve argument purity\nand exact ordering, and should provide enough headroom over the 47.2294x\nchampion to clear the 49.5909x acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40189909455",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 2,
+      "p_meta_after": 0.4
     }
   ],
   "runs": [
