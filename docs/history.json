@@ -2424,6 +2424,186 @@
       "notes_changed": false,
       "stall_after": 2,
       "p_meta_after": 0.4
+    },
+    {
+      "gen": 14,
+      "ts": "2026-10-25T21:05:25.060Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...) (+5 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 71.11,
+        "bytes": 12077,
+        "tasks": {
+          "topK": {
+            "speedup": 22.1718,
+            "speedup_train": 18.3054,
+            "us": 95.5,
+            "base_us": 2473.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 76.8515,
+            "speedup_train": 88.6302,
+            "us": 161.5,
+            "base_us": 12586.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 135.0784,
+            "speedup_train": 90.1899,
+            "us": 85.6,
+            "base_us": 10863.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 258.7516,
+            "speedup_train": 174.523,
+            "us": 104.7,
+            "base_us": 27118.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 30.1166,
+            "speedup_train": 23.1695,
+            "us": 1956.3,
+            "base_us": 59054.3,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 315.0869,
+            "speedup_train": 267.9445,
+            "us": 54.2,
+            "base_us": 17675.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.0381,
+            "speedup_train": 2.9358,
+            "us": 1073.8,
+            "base_us": 4334,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 1202.8,
+            "base_us": 27147.9,
+            "correct": false
+          }
+        },
+        "failures": [
+          "primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 56.434,
+        "score_train": 41.3813,
+        "correct": true,
+        "noise_pct": 29.87,
+        "bytes": 9471,
+        "tasks": {
+          "topK": {
+            "speedup": 42.611,
+            "speedup_train": 18.5882,
+            "us": 60.5,
+            "base_us": 2496.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 76.3828,
+            "speedup_train": 86.0108,
+            "us": 162.1,
+            "base_us": 12486,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 134.8827,
+            "speedup_train": 81.1227,
+            "us": 86.1,
+            "base_us": 10863.2,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.2447,
+            "speedup_train": 174.8236,
+            "us": 103.7,
+            "base_us": 27137.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 31.5,
+            "speedup_train": 23.3357,
+            "us": 1964.9,
+            "base_us": 58997.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 371.7503,
+            "speedup_train": 277.3822,
+            "us": 46.6,
+            "base_us": 17697.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.1738,
+            "speedup_train": 2.858,
+            "us": 1354.5,
+            "base_us": 4297.7,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.1363,
+            "speedup_train": 20.4992,
+            "us": 1116.1,
+            "base_us": 27148.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 71.11,
+      "seed": 1578378792,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 145196,
+      "usage": {
+        "input_tokens": 9910,
+        "output_tokens": 52722,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "Generation 14 keeps the proven selection, LIS, and matrix-multiplication structure while removing repeated hashing in word counting, eliminating most unnecessary prime marking and scanning, adding a radix fast path for large selected topK arrays, reducing interval allocations, and using a smaller dense two-sum table. These changes preserve exact ordering, duplicate semantics, argument purity, and integer boundaries while targeting the weakest train-visible tasks; the conservative projected aggregate is 52.02× versus the 49.77× acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40233084456",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 3,
+      "p_meta_after": 0.5
     }
   ],
   "runs": [
