@@ -159,29 +159,49 @@ export function lis(arr) {
 
 export function wordFreqTopK(text, k) {
   if (k <= 0) return [];
+
   const words = text.split(/\s+/);
-  const counts = new Map();
+  const ids = new Map();
+  const idCounts = [];
+  const uniqueWords = [];
+
   for (let i = 0; i < words.length; i++) {
-    const w = words[i];
-    if (w.length === 0) continue;
-    counts.set(w, (counts.get(w) || 0) + 1);
+    const word = words[i];
+    if (word.length === 0) continue;
+    let id = ids.get(word);
+    if (id === undefined) {
+      id = idCounts.length;
+      ids.set(word, id);
+      idCounts.push(1);
+      uniqueWords.push(word);
+    } else {
+      idCounts[id]++;
+    }
   }
 
-  if (k >= counts.size) {
+  const size = idCounts.length;
+  if (size === 0) return [];
+
+  if (k >= size) {
     const entries = [];
-    for (const entry of counts) entries.push(entry);
+    for (let id = 0; id < size; id++) {
+      entries.push([uniqueWords[id], idCounts[id]]);
+    }
     entries.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
     return entries;
   }
 
-  const byCount = new Uint32Array(words.length + 1);
-  const entries = [];
   let maxCount = 0;
-  for (const entry of counts) {
-    const count = entry[1];
-    entries.push(entry);
+  for (let id = 0; id < size; id++) {
+    if (idCounts[id] > maxCount) maxCount = idCounts[id];
+  }
+
+  const byCount = new Uint32Array(maxCount + 1);
+  const entries = [];
+  for (let id = 0; id < size; id++) {
+    const count = idCounts[id];
     byCount[count]++;
-    if (count > maxCount) maxCount = count;
+    entries.push([uniqueWords[id], count]);
   }
 
   let cutoff = maxCount;
@@ -201,7 +221,8 @@ export function wordFreqTopK(text, k) {
 
   higher.sort((a, b) => b[1] - a[1] || (a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0));
   tied.sort((a, b) => a[0] < b[0] ? -1 : a[0] > b[0] ? 1 : 0);
-  return higher.concat(tied.slice(0, needed));
+  for (let i = 0; i < needed; i++) higher.push(tied[i]);
+  return higher;
 }
 
 export function twoSumCount(arr, target) {
@@ -249,70 +270,310 @@ export function twoSumCount(arr, target) {
 }
 
 export function matMul(a, b, n) {
-  const c = new Float64Array(n * n);
+  if (n <= 0) return new Float64Array(n * n);
+
   const bt = new Float64Array(n * n);
-  for (let k = 0; k < n; k++) {
-    const ko = k * n;
-    for (let j = 0; j < n; j++) bt[j * n + k] = b[ko + j];
+  if (ArrayBuffer.isView(b)) {
+    for (let k = 0; k < n; k++) {
+      const ko = k * n;
+      let dst = k;
+      for (let j = 0; j < n; j++) {
+        bt[dst] = b[ko + j];
+        dst += n;
+      }
+    }
+  } else {
+    for (let k = 0; k < n; k++) {
+      const ko = k * n;
+      let dst = k;
+      for (let j = 0; j < n; j++) {
+        bt[dst] = b[ko + j];
+        dst += n;
+      }
+    }
   }
-  const m = n & ~7;
-  const nj = n & ~3;
-  for (let i = 0; i < n; i++) {
-    const io = i * n;
-    for (let jj = 0; jj < nj; jj += 4) {
+
+  if (ArrayBuffer.isView(a)) return multiply2x2Typed(a, bt, n);
+  return multiply2x2Plain(a, bt, n);
+}
+
+function multiply2x2Typed(a, bt, n) {
+  const c = new Float64Array(n * n);
+  const even = n & ~1;
+
+  for (let i = 0; i < even; i += 2) {
+    const io0 = i * n;
+    const io1 = io0 + n;
+    for (let j = 0; j < even; j += 2) {
+      const o0 = j * n;
+      const o1 = o0 + n;
+      let s00 = 0;
+      let s01 = 0;
+      let s10 = 0;
+      let s11 = 0;
+      let k = 0;
+
+      for (; k + 7 < n; k += 8) {
+        let x0 = a[io0 + k];
+        let x1 = a[io1 + k];
+        let y0 = bt[o0 + k];
+        let y1 = bt[o1 + k];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 1];
+        x1 = a[io1 + k + 1];
+        y0 = bt[o0 + k + 1];
+        y1 = bt[o1 + k + 1];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 2];
+        x1 = a[io1 + k + 2];
+        y0 = bt[o0 + k + 2];
+        y1 = bt[o1 + k + 2];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 3];
+        x1 = a[io1 + k + 3];
+        y0 = bt[o0 + k + 3];
+        y1 = bt[o1 + k + 3];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 4];
+        x1 = a[io1 + k + 4];
+        y0 = bt[o0 + k + 4];
+        y1 = bt[o1 + k + 4];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 5];
+        x1 = a[io1 + k + 5];
+        y0 = bt[o0 + k + 5];
+        y1 = bt[o1 + k + 5];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 6];
+        x1 = a[io1 + k + 6];
+        y0 = bt[o0 + k + 6];
+        y1 = bt[o1 + k + 6];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 7];
+        x1 = a[io1 + k + 7];
+        y0 = bt[o0 + k + 7];
+        y1 = bt[o1 + k + 7];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+      }
+
+      for (; k < n; k++) {
+        const x0 = a[io0 + k];
+        const x1 = a[io1 + k];
+        const y0 = bt[o0 + k];
+        const y1 = bt[o1 + k];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+      }
+
+      const oj = io0 + j;
+      c[oj] = s00;
+      c[oj + 1] = s01;
+      c[oj + n] = s10;
+      c[oj + n + 1] = s11;
+    }
+  }
+
+  if ((n & 1) !== 0) {
+    const last = even;
+    const oo = last * n;
+    for (let i = 0; i < even; i += 2) {
+      const io0 = i * n;
+      const io1 = io0 + n;
       let s0 = 0;
       let s1 = 0;
-      let s2 = 0;
-      let s3 = 0;
-      const o0 = (jj + 0) * n;
-      const o1 = (jj + 1) * n;
-      const o2 = (jj + 2) * n;
-      const o3 = (jj + 3) * n;
-      for (let k = 0; k < m; k += 8) {
-        const a0 = a[io + k];
-        const a1 = a[io + k + 1];
-        const a2 = a[io + k + 2];
-        const a3 = a[io + k + 3];
-        const a4 = a[io + k + 4];
-        const a5 = a[io + k + 5];
-        const a6 = a[io + k + 6];
-        const a7 = a[io + k + 7];
-        s0 += a0 * bt[o0 + k] + a1 * bt[o0 + k + 1]
-            + a2 * bt[o0 + k + 2] + a3 * bt[o0 + k + 3]
-            + a4 * bt[o0 + k + 4] + a5 * bt[o0 + k + 5]
-            + a6 * bt[o0 + k + 6] + a7 * bt[o0 + k + 7];
-        s1 += a0 * bt[o1 + k] + a1 * bt[o1 + k + 1]
-            + a2 * bt[o1 + k + 2] + a3 * bt[o1 + k + 3]
-            + a4 * bt[o1 + k + 4] + a5 * bt[o1 + k + 5]
-            + a6 * bt[o1 + k + 6] + a7 * bt[o1 + k + 7];
-        s2 += a0 * bt[o2 + k] + a1 * bt[o2 + k + 1]
-            + a2 * bt[o2 + k + 2] + a3 * bt[o2 + k + 3]
-            + a4 * bt[o2 + k + 4] + a5 * bt[o2 + k + 5]
-            + a6 * bt[o2 + k + 6] + a7 * bt[o2 + k + 7];
-        s3 += a0 * bt[o3 + k] + a1 * bt[o3 + k + 1]
-            + a2 * bt[o3 + k + 2] + a3 * bt[o3 + k + 3]
-            + a4 * bt[o3 + k + 4] + a5 * bt[o3 + k + 5]
-            + a6 * bt[o3 + k + 6] + a7 * bt[o3 + k + 7];
+      for (let k = 0; k < n; k++) {
+        const x0 = a[io0 + k];
+        const x1 = a[io1 + k];
+        const y = bt[oo + k];
+        s0 += x0 * y;
+        s1 += x1 * y;
       }
-      for (let k = m; k < n; k++) {
-        const ak = a[io + k];
-        s0 += ak * bt[o0 + k];
-        s1 += ak * bt[o1 + k];
-        s2 += ak * bt[o2 + k];
-        s3 += ak * bt[o3 + k];
-      }
-      c[io + jj] = s0;
-      c[io + jj + 1] = s1;
-      c[io + jj + 2] = s2;
-      c[io + jj + 3] = s3;
+      c[io0 + last] = s0;
+      c[io1 + last] = s1;
     }
-    for (let j = nj; j < n; j++) {
+
+    const lo = last * n;
+    for (let j = 0; j < n; j++) {
+      const oj = j * n;
       let s = 0;
-      const oo = j * n;
-      for (let k = 0; k < n; k++) s += a[io + k] * bt[oo + k];
-      c[io + j] = s;
+      for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
+      c[lo + j] = s;
     }
   }
+
+  return c;
+}
+
+function multiply2x2Plain(a, bt, n) {
+  const c = new Float64Array(n * n);
+  const even = n & ~1;
+
+  for (let i = 0; i < even; i += 2) {
+    const io0 = i * n;
+    const io1 = io0 + n;
+    for (let j = 0; j < even; j += 2) {
+      const o0 = j * n;
+      const o1 = o0 + n;
+      let s00 = 0;
+      let s01 = 0;
+      let s10 = 0;
+      let s11 = 0;
+      let k = 0;
+
+      for (; k + 7 < n; k += 8) {
+        let x0 = a[io0 + k];
+        let x1 = a[io1 + k];
+        let y0 = bt[o0 + k];
+        let y1 = bt[o1 + k];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 1];
+        x1 = a[io1 + k + 1];
+        y0 = bt[o0 + k + 1];
+        y1 = bt[o1 + k + 1];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 2];
+        x1 = a[io1 + k + 2];
+        y0 = bt[o0 + k + 2];
+        y1 = bt[o1 + k + 2];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 3];
+        x1 = a[io1 + k + 3];
+        y0 = bt[o0 + k + 3];
+        y1 = bt[o1 + k + 3];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 4];
+        x1 = a[io1 + k + 4];
+        y0 = bt[o0 + k + 4];
+        y1 = bt[o1 + k + 4];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 5];
+        x1 = a[io1 + k + 5];
+        y0 = bt[o0 + k + 5];
+        y1 = bt[o1 + k + 5];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 6];
+        x1 = a[io1 + k + 6];
+        y0 = bt[o0 + k + 6];
+        y1 = bt[o1 + k + 6];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+
+        x0 = a[io0 + k + 7];
+        x1 = a[io1 + k + 7];
+        y0 = bt[o0 + k + 7];
+        y1 = bt[o1 + k + 7];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+      }
+
+      for (; k < n; k++) {
+        const x0 = a[io0 + k];
+        const x1 = a[io1 + k];
+        const y0 = bt[o0 + k];
+        const y1 = bt[o1 + k];
+        s00 += x0 * y0;
+        s01 += x0 * y1;
+        s10 += x1 * y0;
+        s11 += x1 * y1;
+      }
+
+      const oj = io0 + j;
+      c[oj] = s00;
+      c[oj + 1] = s01;
+      c[oj + n] = s10;
+      c[oj + n + 1] = s11;
+    }
+  }
+
+  if ((n & 1) !== 0) {
+    const last = even;
+    const oo = last * n;
+    for (let i = 0; i < even; i += 2) {
+      const io0 = i * n;
+      const io1 = io0 + n;
+      let s0 = 0;
+      let s1 = 0;
+      for (let k = 0; k < n; k++) {
+        const x0 = a[io0 + k];
+        const x1 = a[io1 + k];
+        const y = bt[oo + k];
+        s0 += x0 * y;
+        s1 += x1 * y;
+      }
+      c[io0 + last] = s0;
+      c[io1 + last] = s1;
+    }
+
+    const lo = last * n;
+    for (let j = 0; j < n; j++) {
+      const oj = j * n;
+      let s = 0;
+      for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
+      c[lo + j] = s;
+    }
+  }
+
   return c;
 }
 

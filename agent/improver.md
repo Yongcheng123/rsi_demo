@@ -1,64 +1,73 @@
 # Improver — strategy for rewriting `agent/solver.js`
 
-## Current state
+## Objective and current baseline
 
-- The sealed champion is about 45.4–45.5× geomean. Acceptance requires beating the actual measured champion by over 5%, roughly 47.8×. Aim for at least 8% headroom to absorb noise.
-- Current holdout speedups: topK 35.6×, dedupe 77.4×, merge 125×, lis 260×, wordFreqTopK 29.9×, twoSumCount 90.1×, matMul 3.18×, primesUpTo 24.1×.
-- Current train speedups are 18.9×, 90.7×, 81.1×, 175×, 21.5×, 37.6×, 2.86×, and 19.8× respectively. Forecast with the weaker split, never the best split.
-- The notes’ 39.03× champion is stale gen-6 data. The matMul 1.16× and primes 13.9× figures in the old strategy are also stale.
-- Read `agent/solver.js`, `agent/notes.md`, the function spec, and the visible harness before changing anything. Do not edit the harness or evaluator.
+- The supplied current table implies about 49.1× holdout and 39.9× train. The prose champion figures in `agent/notes.md` and the old strategy are stale; trust fresh paired measurements.
+- Acceptance requires more than 5% over the actual measured champion: about 51.6× if the champion remains 49.1×. Target at least 53.0× for noise margin.
+- A relative gain of only one task must exceed `1.05^8 = 1.477` to clear the bar. For an 8% aggregate target, one task must exceed `1.08^8 = 1.85`; otherwise the product of independently validated task factors must exceed 1.85.
+- Measure speedup relative to the current champion, not an old absolute figure. Relevant current holdout targets include wordFreqTopK 32.0× for a 5% aggregate gain, matMul 4.43×, and primesUpTo 35.4×.
 
-## Required workflow
+## What the track record actually teaches
 
-1. Copy the current solver to a temporary oracle before editing. Keep its source unchanged outside the final `agent/solver.js`.
-2. Run the provided benchmark on the unchanged champion. Establish train and holdout timings with warmup and repeated runs.
-3. Profile source-level costs and inspect the visible input shapes. Never assume a holdout size or representation is universal.
-4. Develop one isolated candidate at a time. Compare candidate and oracle in the same process, preferably alternating runs to reduce JIT/GC drift; use medians rather than one run.
-5. Differential-test before benchmarking. Submit only a candidate whose projected geomean clears the bar robustly.
+- Accepted work removed concrete algorithmic, hashing, or allocation work: matMul tiling, selective topK/prime work, three targeted gen-7 changes, and the gen-11 bounded two-sum table.
+- Broad cosmetic bundles repeatedly failed. Gen 12–13 lacked a real gain; gen 14–15 were disqualified by prime/topK correctness regressions.
+- Freeze the proven topK, dedupe, mergeIntervals, lis, and twoSumCount implementations. In particular, do not repeat topK duplicate handling or the old two-sum experiment.
+- Freeze the current primesUpTo mapping. Gen 10, 12, and 14 show that prime-template or cursor rewrites are high risk.
+- Freeze the current 1×4, eight-way-unrolled matMul kernel’s loop structure. The 2×4 tile regressed in gen 5.
+- Native `split` is substantially faster than direct whitespace scanning for word frequency; gen 10 proved that scanner path is harmful.
 
-## Lessons from recent generations
+## Preferred next campaign
 
-- Gen 2, gen 5, and gen 9 failed the significance bar. Textbook transposes, extra blocking, and bounded two-sum machinery are not automatic wins.
-- Gen 5’s 2×4 matMul tile regressed. The proven matMul kernel is transposed B, i-j-k, a 1×4 j-tile, and an 8-way k-unroll.
-- Gen 8 lost duplicate-heavy `topK`; gen 10 broke `primesUpTo` on its first call. Those are mandatory regression cases.
-- Multiple unrelated rewrites made failures hard to isolate. Keep each change independently testable and verify the combined candidate too.
-- Accepted gains came from removing real algorithmic or allocation work, not from cosmetic dispatch changes.
+### 1. Isolate word-frequency hashing
 
-## Acceptance arithmetic
+- Preserve the champion’s exact tokenization, trimming, case handling, and output ordering. Do not replace native splitting with a character scanner.
+- First candidate: token-to-stable-ID `Map` plus a count array. Look up one ID per token, assign an ID only on first occurrence, and increment the array thereafter. This removes repeated writes to a count map without changing tokenization.
+- Keep selection and output semantics unchanged in this first experiment. Reconstruct the same entries from IDs and counts, preserving lexical tie order and every `k` boundary.
+- Test count-only first. If it yields a substantial but insufficient gain, test cutoff selection separately; do not bundle both initially. Gen 14–15 attempted stable IDs plus bucket selection, but contamination prevented an isolated measurement.
+- Require at least a 1.477× relative factor before adopting this as the sole change; prefer 1.85×. If counting is not visibly improved, abandon it rather than adding cosmetic selection changes.
 
-- If changed tasks improve by factors `r1, r2, ...`, the aggregate multiplier is `(r1*r2*...)**(1/8)`.
-- Therefore one changed task must improve by at least 1.477×; two tasks need a product above 1.477, e.g. 1.25× and 1.20×; three 1.15× gains also suffice.
-- Sole-task targets from current holdout values are: topK 52.6×, dedupe 114.4×, merge 184.7×, lis 384.2×, wordFreqTopK 44.2×, twoSumCount 133.2×, matMul 4.70×, primesUpTo 35.6×.
-- Do not submit a projection barely over 5%. If no credible lever reaches the bar, select another lever rather than adding no-op “optimizations.”
+### 2. If word frequency cannot clear the threshold, analyze matMul alone
 
-## Lever order
+- First separate transpose/allocation cost from arithmetic-loop cost using the visible harness.
+- Preserve transposed B, i-j-k traversal, the 1×4 j-tile, eight-way k-unroll, output representation, and exact per-element floating-point summation order.
+- Test only one arithmetic specialization at a time: a sixteen-way k-unroll, an exact dimension-tail specialization, or a legal representation-specific kernel. Select the family indicated by profiling.
+- Never use the regressed 2×4 tile. Verify that every output element receives terms in exactly the original k order.
+- Require at least 1.477× relative gain, including tails and both visible representations, before considering it.
 
-1. **primesUpTo and wordFreqTopK:** lowest-risk places for focused wins.
-   - For primes, retain the exact proven segmented odd-only kernel. Isolate segment-size, cursor-arithmetic, marking-loop, or allocation changes. Do not reuse gen-10’s template construction without complete boundary tests.
-   - For word frequency, isolate direct whitespace scanning, presized counts, cutoff selection, or output allocation while preserving tokenization and tie order exactly.
-2. **matMul:** largest numerical headroom, but expensive to improve safely. Keep the proven kernel unless an isolated candidate exceeds 4.70× holdout and 4.26× train. Specialize only by representation or size when semantics are identical, and preserve each output element’s floating-point summation order.
-3. **topK:** retain the proven monotonic/selection hybrid. Change only one stage at a time, such as selection, partitioning, or result copying. Test duplicate-heavy and boundary-sized inputs especially carefully.
-4. Avoid mergeIntervals, lis, dedupe, and twoSumCount unless profiling exposes obvious removable overhead. They are already fast, and the twoSum experiment failed.
+### 3. Prime segment sizing is only a fallback
+
+- If and only if profiling shows segment allocation or marking dominates, compare 8, 12, and 16 KiB segments while leaving odd-offset mapping, base-prime cursor updates, and output construction untouched.
+- Reject the variant immediately for any boundary mismatch or for a small gain such as less than 1.2×. Segment sizing alone is unlikely to supply a 1.477× task factor.
+- Combine independently validated levers only when their measured product robustly clears the target. Never add a rejected marginal rewrite merely to make the proposal look broader.
+
+## Measurement workflow
+
+1. Copy the unchanged solver to a temporary oracle. Edit only the final `agent/solver.js`; never alter the harness or evaluator.
+2. Benchmark the unchanged champion with warmup and repeated runs. Establish separate train and holdout factors.
+3. Compare one candidate against the oracle in the same process, preferably with alternating runs to reduce JIT/GC drift. Use medians, not a single timing.
+4. Profile source-level costs and inspect actual input representations without assuming hidden sizes are universal.
+5. Differential-test before timing. A candidate with any semantic mismatch is discarded regardless of speed.
+6. Compute the projected aggregate from candidate/champion ratios. Reject projections near 1.477; target robustly above 1.05, preferably 1.08.
+7. Forecast using the weaker split when train and holdout disagree. Keep unchanged tasks fixed and reject regressions larger than benchmark noise.
 
 ## Correctness gate
 
-- Differential-test random inputs and the complete retained edge-case trace in `agent/notes.md` against the oracle. Never delete a trace case because visible data misses it.
-- Include prime squares, segment crossings, final partial segments, and `n < 2`; include duplicate-heavy topK and every `k` boundary.
-- For matMul, cover zero/one dimensions, j/k tails, both visible representations, and unchanged accumulation order.
-- Check exact output ordering, numeric signs including negative zero, and strict-equality/NaN behavior where relevant.
-- Verify arguments are not mutated and every call creates its own working state. No cross-call caching.
-- Do not specialize behavior to visible values, encode known answers, or let train-only distributions alter semantics.
+- Differential-test the changed function against the oracle on randomized inputs and every retained edge trace in `agent/notes.md`.
+- Include duplicate-heavy topK and all `k` boundaries; strict NaN/-0 behavior in dedupe; unsorted, nested, and touching intervals; strict LIS equality cases.
+- For word frequency, cover whitespace runs, empty input, repeated words, count ties, lexical ties, and `k <= 0` or `k` above vocabulary size.
+- For two-sum, preserve duplicate occurrence semantics and exact `i < j` counting. For matMul, cover zero/one dimensions, j/k tails, both representations, NaN/-0 behavior, and unchanged accumulation order.
+- For primes, cover `n < 2`, prime squares, segment crossings, partial segments, and every base-prime boundary.
+- Verify exact argument immutability, exact exports, and independent working state on every call. No cross-call caching.
 
-## Sandbox rules
+## Sandbox and anti-overfitting rules
 
 - Preserve exactly the required export set.
-- No imports, string/template literals, `this`, classes, `typeof`, `eval`, top-level mutable state, `console.*`, or `debugger`.
-- Top-level declarations may only be required exported/nonexported functions or numeric/function constants. No top-level calls.
-- Use numeric character codes or permitted regex constructs. Do not access hidden evaluator data or modify benchmark files.
+- No imports, string/template literals, `this`, classes, `typeof`, `eval`, `console.*`, or `debugger`.
+- Top-level declarations may only be required exports, helper functions, or numeric/function constants. No top-level calls or mutable state.
+- Do not access evaluator data, encode known answers, specialize behavior to visible values, or alter benchmark files.
 
-## Memory and submission
+## Memory protocol
 
-- Append to `agent/notes.md`: exact algorithm changed, per-task train/holdout factors, projected and measured aggregate, correctness cases run, failed variants, and one concrete next lever.
-- Keep the historical record and edge trace; distinguish measured results from projections and replace stale numbers only after a real benchmark.
-- Before submitting, confirm: guard compliance, exact exports, no argument mutation, differential tests passed, stable factor measurements, aggregate product over 1.477, and notes updated.
-===== END FILE =====
+- Append measured results to `agent/notes.md`: exact algorithm changed, train and holdout factors, candidate/champion ratios, projected and measured aggregate, correctness cases, and failed variants.
+- Record one concrete next lever after each experiment. Keep historical edge traces and clearly label projections versus measurements.
+- Replace stale champion numbers only after a fresh paired benchmark. Explicitly record the gen-12–15 failures so later proposals do not repeat them.

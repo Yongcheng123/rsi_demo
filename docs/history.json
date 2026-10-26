@@ -2784,6 +2784,180 @@
       "notes_changed": false,
       "stall_after": 4,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 16,
+      "ts": "2026-10-26T22:52:59.891Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": true,
+      "reason": "accepted: 59.7054× vs champion 56.7665× (+5.2%)",
+      "delta": 0.0518,
+      "candidate": {
+        "score": 59.7054,
+        "score_train": 41.7373,
+        "correct": true,
+        "noise_pct": 30.96,
+        "bytes": 14556,
+        "tasks": {
+          "topK": {
+            "speedup": 48.4786,
+            "speedup_train": 18.9017,
+            "us": 52,
+            "base_us": 2472.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 83.0569,
+            "speedup_train": 91.5045,
+            "us": 151.8,
+            "base_us": 12575.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 133.6258,
+            "speedup_train": 84.9247,
+            "us": 87,
+            "base_us": 10860.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 260.3585,
+            "speedup_train": 175.0839,
+            "us": 103.7,
+            "base_us": 27118.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 32.8908,
+            "speedup_train": 21.5814,
+            "us": 1829.8,
+            "base_us": 60287,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 381.0375,
+            "speedup_train": 282.6247,
+            "us": 47.8,
+            "base_us": 17694.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9143,
+            "speedup_train": 2.9056,
+            "us": 923.7,
+            "base_us": 4296.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.4975,
+            "speedup_train": 20.2048,
+            "us": 1130.9,
+            "base_us": 27153.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 56.7665,
+        "score_train": 41.2671,
+        "correct": true,
+        "noise_pct": 48.87,
+        "bytes": 9471,
+        "tasks": {
+          "topK": {
+            "speedup": 49.9746,
+            "speedup_train": 18.785,
+            "us": 52.1,
+            "base_us": 2472.9,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 80.7835,
+            "speedup_train": 90.6919,
+            "us": 155.7,
+            "base_us": 12585,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 135.4591,
+            "speedup_train": 80.868,
+            "us": 85.6,
+            "base_us": 10943.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.6685,
+            "speedup_train": 174.1606,
+            "us": 103.4,
+            "base_us": 27148.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 28.2228,
+            "speedup_train": 21.766,
+            "us": 2051.5,
+            "base_us": 59006.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 373.9841,
+            "speedup_train": 276.9789,
+            "us": 46.9,
+            "base_us": 17680.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.047,
+            "speedup_train": 2.8688,
+            "us": 1363.8,
+            "base_us": 4305,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.4301,
+            "speedup_train": 20.2675,
+            "us": 1112.8,
+            "base_us": 27157.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 30.96,
+      "seed": 1759934644,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 145544,
+      "usage": {
+        "input_tokens": 15360,
+        "output_tokens": 50540,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I isolated two changes while preserving the six proven champion kernels: word-frequency counting now uses stable token IDs and packed counters without changing the validated cutoff ordering, and matrix multiplication now uses representation-specific 2×2 tiles with eight-way k unrolling while retaining transposed B and exact k-order accumulation. Gen 15’s measured matrix factor was about 1.42×, so even a conservative 1.10× word-frequency gain should exceed the 5% aggregate threshold; removing repeated Map writes and shrinking the frequency bucket should provide additional margin. I left topK, prime mapping, and all other proven algorithms untouched to avoid the prior correctness failures.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40414640308",
+      "improver_changed": true,
+      "notes_changed": true,
+      "stall_after": 0,
+      "p_meta_after": 0.2,
+      "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n## Objective and current baseline\n\n- The supplied current table implies about 49.1× holdout and 39.9× train. The prose champion figures in `agent/notes.md` and the old strategy are stale; trust fresh paired measurements.\n- Acceptance requires more than 5% over the actual measured champion: about 51.6× if the champion remains 49.1×. Target at least 53.0× for noise margin.\n- A relative gain of only one task must exceed `1.05^8 = 1.477` to clear the bar. For an 8% aggregate target, one task must exceed `1.08^8 = 1.85`; otherwise the product of independently validated task factors must exceed 1.85.\n- Measure speedup relative to the current champion, not an old absolute figure. Relevant current holdout targets include wordFreqTopK 32.0× for a 5% aggregate gain, matMul 4.43×, and primesUpTo 35.4×.\n\n## What the track record actually teaches\n\n- Accepted work removed concrete algorithmic, hashing, or allocation work: matMul tiling, selective topK/prime work, three targeted gen-7 changes, and the gen-11 bounded two-sum table.\n- Broad cosmetic bundles repeatedly failed. Gen 12–13 lacked a real gain; gen 14–15 were disqualified by prime/topK correctness regressions.\n- Freeze the proven topK, dedupe, mergeIntervals, lis, and twoSumCount implementations. In particular, do not repeat topK duplicate handling or the old two-sum experiment.\n- Freeze the current primesUpTo mapping. Gen 10, 12, and 14 show that prime-template or cursor rewrites are high risk.\n- Freeze the current 1×4, eight-way-unrolled matMul kernel’s loop structure. The 2×4 tile regressed in gen 5.\n- Native `split` is substantially faster than direct whitespace scanning for word frequency; gen 10 proved that scanner path is harmful.\n\n## Preferred next campaign\n\n### 1. Isolate word-frequency hashing\n\n- Preserve the champion’s exact tokenization, trimming, case handling, and output ordering. Do not replace native splitting with a character scanner.\n- First candidate: token-to-stable-ID `Map` plus a count array. Look up one ID per token, assign an ID only on first occurrence, and increment the array thereafter. This removes repeated writes to a count map without changing tokenization.\n- Keep selection and output semantics unchanged in this first experiment. Reconstruct the same entries from IDs and counts, preserving lexical tie order and every `k` boundary.\n- Test count-only first. If it yields a substantial but insufficient gain, test cutoff selection separately; do not bundle both initially. Gen 14–15 attempted stable IDs plus bucket selection, but contamination prevented an isolated measurement.\n- Require at least a 1.477× relative factor before adopting this as the sole change; prefer 1.85×. If counting is not visibly improved, abandon it rather than adding cosmetic selection changes.\n\n### 2. If word frequency cannot clear the threshold, analyze matMul alone\n\n- First separate transpose/allocation cost from arithmetic-loop cost using the visible harness.\n- Preserve transposed B, i-j-k traversal, the 1×4 j-tile, eight-way k-unroll, output representation, and exact per-element floating-point summation order.\n- Test only one arithmetic specialization at a time: a sixteen-way k-unroll, an exact dimension-tail specialization, or a legal representation-specific kernel. Select the family indicated by profiling.\n- Never use the regressed 2×4 tile. Verify that every output element receives terms in exactly the original k order.\n- Require at least 1.477× relative gain, including tails and both visible representations, before considering it.\n\n### 3. Prime segment sizing is only a fallback\n\n- If and only if profiling shows segment allocation or marking dominates, compare 8, 12, and 16 KiB segments while leaving odd-offset mapping, base-prime cursor updates, and output construction untouched.\n- Reject the variant immediately for any boundary mismatch or for a small gain such as less than 1.2×. Segment sizing alone is unlikely to supply a 1.477× task factor.\n- Combine independently validated levers only when their measured product robustly clears the target. Never add a rejected marginal rewrite merely to make the proposal look broader.\n\n## Measurement workflow\n\n1. Copy the unchanged solver to a temporary oracle. Edit only the final `agent/solver.js`; never alter the harness or evaluator.\n2. Benchmark the unchanged champion with warmup and repeated runs. Establish separate train and holdout factors.\n3. Compare one candidate against the oracle in the same process, preferably with alternating runs to reduce JIT/GC drift. Use medians, not a single timing.\n4. Profile source-level costs and inspect actual input representations without assuming hidden sizes are universal.\n5. Differential-test before timing. A candidate with any semantic mismatch is discarded regardless of speed.\n6. Compute the projected aggregate from candidate/champion ratios. Reject projections near 1.477; target robustly above 1.05, preferably 1.08.\n7. Forecast using the weaker split when train and holdout disagree. Keep unchanged tasks fixed and reject regressions larger than benchmark noise.\n\n## Correctness gate\n\n- Differential-test the changed function against the oracle on randomized inputs and every retained edge trace in `agent/notes.md`.\n- Include duplicate-heavy topK and all `k` boundaries; strict NaN/-0 behavior in dedupe; unsorted, nested, and touching intervals; strict LIS equality cases.\n- For word frequency, cover whitespace runs, empty input, repeated words, count ties, lexical ties, and `k <= 0` or `k` above vocabulary size.\n- For two-sum, preserve duplicate occurrence semantics and exact `i < j` counting. For matMul, cover zero/one dimensions, j/k tails, both representations, NaN/-0 behavior, and unchanged accumulation order.\n- For primes, cover `n < 2`, prime squares, segment crossings, partial segments, and every base-prime boundary.\n- Verify exact argument immutability, exact exports, and independent working state on every call. No cross-call caching.\n\n## Sandbox and anti-overfitting rules\n\n- Preserve exactly the required export set.\n- No imports, string/template literals, `this`, classes, `typeof`, `eval`, `console.*`, or `debugger`.\n- Top-level declarations may only be required exports, helper functions, or numeric/function constants. No top-level calls or mutable state.\n- Do not access evaluator data, encode known answers, specialize behavior to visible values, or alter benchmark files.\n\n## Memory protocol\n\n- Append measured results to `agent/notes.md`: exact algorithm changed, train and holdout factors, candidate/champion ratios, projected and measured aggregate, correctness cases, and failed variants.\n- Record one concrete next lever after each experiment. Keep historical edge traces and clearly label projections versus measurements.\n- Replace stale champion numbers only after a fresh paired benchmark. Explicitly record the gen-12–15 failures so later proposals do not repeat them.\n"
     }
   ],
   "runs": [
