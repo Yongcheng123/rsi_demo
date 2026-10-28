@@ -3477,6 +3477,180 @@
       "notes_changed": false,
       "stall_after": 3,
       "p_meta_after": 0.5
+    },
+    {
+      "gen": 20,
+      "ts": "2026-10-28T22:48:30.554Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": true,
+      "reason": "accepted: 49.2076× vs champion 46.7821× (+5.2%)",
+      "delta": 0.0518,
+      "candidate": {
+        "score": 49.2076,
+        "score_train": 38.4001,
+        "correct": true,
+        "noise_pct": 36.35,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 39.7471,
+            "speedup_train": 20.0406,
+            "us": 38,
+            "base_us": 1517,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 50.4622,
+            "speedup_train": 79.4962,
+            "us": 89.5,
+            "base_us": 4588.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 95.783,
+            "speedup_train": 60.0224,
+            "us": 57.3,
+            "base_us": 5040,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.4718,
+            "speedup_train": 112.8286,
+            "us": 86,
+            "base_us": 13991.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 19.8229,
+            "speedup_train": 14.9626,
+            "us": 1819.7,
+            "base_us": 35622.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 436.4502,
+            "speedup_train": 428.9135,
+            "us": 31.2,
+            "base_us": 12984.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4177,
+            "speedup_train": 2.7546,
+            "us": 544.9,
+            "base_us": 2403.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 28.6386,
+            "speedup_train": 24.7877,
+            "us": 678.8,
+            "base_us": 19657.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 46.7821,
+        "score_train": 37.9627,
+        "correct": true,
+        "noise_pct": 33.11,
+        "bytes": 14556,
+        "tasks": {
+          "topK": {
+            "speedup": 38.5105,
+            "speedup_train": 19.7528,
+            "us": 31.2,
+            "base_us": 1494,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 50.3388,
+            "speedup_train": 79.221,
+            "us": 90.5,
+            "base_us": 4549.2,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 93.8359,
+            "speedup_train": 60.6973,
+            "us": 57.1,
+            "base_us": 5066.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 162.4662,
+            "speedup_train": 113.2873,
+            "us": 84,
+            "base_us": 14024.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 19.0479,
+            "speedup_train": 14.2681,
+            "us": 1867.1,
+            "base_us": 35857.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 379.9427,
+            "speedup_train": 413.8217,
+            "us": 32.8,
+            "base_us": 13042.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.7891,
+            "speedup_train": 2.7613,
+            "us": 553.6,
+            "base_us": 2359.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 28.3092,
+            "speedup_train": 24.5892,
+            "us": 692.6,
+            "base_us": 19605,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 36.35,
+      "seed": 2126963837,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 88986,
+      "usage": {
+        "input_tokens": 17055,
+        "output_tokens": 54808,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "Generation 20 leaves the seven proven non-matrix functions unchanged and targets the champion’s slowest task with a conservative fused-multiply-add matrix path: transposed B, the validated 2×2 tile, eight-way k unrolling, representation-specific kernels, and all tails remain intact, while exact integer domains use Math.fma to remove one arithmetic operation per product. A strict preflight falls back to the original arithmetic for NaN, infinities, fractions, signed zero, unsafe magnitudes, or hosts without Math.fma; the target is at least a 1.65× matrix-task gain, corresponding to roughly 56.7× overall versus the 55.9× acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40781669501",
+      "improver_changed": true,
+      "notes_changed": true,
+      "stall_after": 0,
+      "p_meta_after": 0.2,
+      "improver_md": "# Improver — strategy for rewriting `agent/solver.js`\n\n## Authoritative baseline\n\n- Trust the bottom “Current champion per-task speedups” table: about 53.3× holdout and 40.8× train. The 49.1× “sealed champion” and unmeasured gen-16 sections in `agent/notes.md` are stale history.\n- Acceptance therefore needs roughly 55.94× holdout. Aim for at least 57.0×, preferably 57.5×, to leave noise margin.\n- For candidate/champion per-task factors, the aggregate factor is the eighth root of their product. One changed task needs at least `1.477×`; target `1.65×` for about 6.5% aggregate gain and `1.85×` for about 8%.\n- The table’s speedups are against the evaluator baseline, not against the current implementation. Measure candidate/champion factors directly; never infer them from those columns.\n\n## What the track record teaches\n\n- Successful changes removed concrete work: gen 7’s dense/cutoff/segmented kernels, gen 11’s bounded two-sum table, and gen 16’s stable-ID word count plus 2×2 matrix kernel.\n- Broad bundles are unreliable: gens 12, 13, 17, 18, and 19 missed the threshold. A small aggregate gain is still a failure.\n- Correctness failures were concentrated in topK and prime rewrites: gens 8, 10, 14, and 15. Do not spend the next campaign there.\n- Gen 17’s word bucket/heap bundle, gen 18’s typed topK sort and prime rewrite, and gen 19’s input packing and ancillary fast paths were not useful.\n- Never restore the regressed 2×4 matrix tile, use direct whitespace scanning, repeat prime wheel/cursor experiments, or reinterpret the current two-sum table.\n- The current word count already uses stable IDs and packed counters; the current matrix kernel already uses a 2×2 output tile, eight-way `k` unrolling, transposed B, and separate plain/typed left kernels.\n\n## Freeze policy\n\n- Copy the current implementations of topK, dedupe, mergeIntervals, lis, wordFreqTopK, twoSumCount, and primesUpTo unchanged.\n- In particular, freeze topK duplicate/tie handling, current prime odd-offset mapping and base-prime boundaries, the two-sum occurrence semantics, and word tokenization, trimming, case handling, and lexical tie order.\n- Treat the current 2×2/eight-way matrix structure as the oracle. Change only its representation/layout path unless profiling clearly identifies one arithmetic-only experiment.\n- Do not bundle speculative cleanup, extra tasks, or “low-risk” rewrites. A focused matrix proposal has a better correctness and acceptance rate than another broad bundle.\n\n## Active campaign: representation-specific matrix multiplication\n\n- First split matrix time into B-transpose/allocation, A/B loads, and arithmetic. Benchmark plain and typed operands separately; do not assume the visible representation mix matches hidden inputs.\n- First candidate: specialize the right plain-B path with a dedicated flat transpose or transpose-free column access, selected from the profile. Keep the proven typed-B path unchanged.\n- In that experiment, keep the 2×2 tile, eight-way unrolling, output representation, tails, and increasing-`k` summation order identical. Change only B layout/access.\n- If transpose/allocation is small, abandon that path immediately. Test one shared arithmetic-only alternative, preferably 16-way `k` unrolling, with exact order and explicit tails.\n- Do not combine layout and arithmetic changes in one candidate. Do not try 2×4 tiling or another broad kernel rewrite.\n- Require at least a 1.65× paired matrix-task factor across both train and holdout, with no representation-specific regression. A 1.2–1.5× matrix gain cannot clear the aggregate bar by itself.\n\n## Measurement workflow\n\n1. Copy the unchanged champion to a temporary oracle and edit only the final `agent/solver.js`.\n2. Establish fresh champion timings with warmup, repeated rounds, and medians. Alternate oracle/candidate order to reduce JIT, GC, and thermal drift.\n3. Run correctness before timing. Discard any semantic mismatch immediately.\n4. Measure train and holdout separately and forecast from the weaker split. Reject regressions larger than benchmark noise.\n5. Compute the projected aggregate from the product of paired per-task factors. Do not submit a projection close to 1.477; target at least 1.65.\n6. Profile the visible harness and generated sizes without specializing behavior to visible values. The final candidate must contain only measured, validated changes.\n\n## Correctness gate\n\n- Differential-test the full solver against the oracle on randomized inputs and retained traces.\n- For matrix multiplication, cover plain and typed left/right combinations, cross-realm typed arrays, zero/one dimensions, rectangular shapes, odd tails, NaN, and signed zero.\n- Preserve exact per-element accumulation order and argument immutability. Verify output density and representation exactly.\n- Run the retained edge traces for every frozen task as a regression check. Copying a frozen implementation is preferable to “improving” it.\n- Any mismatch, changed tie order, changed numeric type, or hidden-input assumption rejects the candidate regardless of speed.\n\n## Sandbox and anti-overfitting rules\n\n- Preserve exactly the current export set.\n- No imports, string or template literals, `this`, classes, `typeof`, `eval`, `console.*`, or `debugger`.\n- Top-level declarations may only be exports, helper functions, or numeric/function constants. No top-level calls or mutable state.\n- Every call must allocate independent working state; no cross-call caching.\n- Do not modify the harness, access evaluator data, encode known answers, or specialize behavior to visible inputs.\n- Keep `ArrayBuffer.isView`-style cross-realm typed-array detection; do not replace it with realm-fragile `instanceof` checks.\n\n## Memory protocol\n\n- First add a status correction to `agent/notes.md`: the bottom champion table supersedes the 49.1× section, and gen 16’s stable-ID/2×2 changes are already in the champion.\n- Append the exact algorithm changed, train and holdout candidate/champion factors, absolute timings, projected and measured aggregate, correctness cases, and every rejected variant.\n- Clearly distinguish projections from measurements and never copy historical absolute scores into a new projection.\n- Preserve historical edge traces. Record one concrete next lever after each experiment, including the exact reason a matrix layout or arithmetic variant was abandoned.\n"
     }
   ],
   "runs": [

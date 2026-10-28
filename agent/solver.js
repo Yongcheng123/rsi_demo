@@ -272,6 +272,7 @@ export function twoSumCount(arr, target) {
 export function matMul(a, b, n) {
   if (n <= 0) return new Float64Array(n * n);
 
+  const fuse = Math.fma !== undefined && fuseSafe(a, b, n);
   const bt = new Float64Array(n * n);
   if (ArrayBuffer.isView(b)) {
     for (let k = 0; k < n; k++) {
@@ -293,11 +294,41 @@ export function matMul(a, b, n) {
     }
   }
 
-  if (ArrayBuffer.isView(a)) return multiply2x2Typed(a, bt, n);
-  return multiply2x2Plain(a, bt, n);
+  if (ArrayBuffer.isView(a)) return multiply2x2Typed(a, bt, n, fuse);
+  return multiply2x2Plain(a, bt, n, fuse);
 }
 
-function multiply2x2Typed(a, bt, n) {
+function fuseSafe(a, b, n) {
+  const maxExact = 9007199254740992;
+  const limit = Math.floor(Math.sqrt(maxExact / n)) - 1;
+  const count = n * n;
+
+  for (let i = 0; i < count; i++) {
+    const v = a[i];
+    if (v !== (v | 0)) return false;
+    if (v === 0) {
+      if (1 / v < 0) return false;
+    } else {
+      const av = v < 0 ? -v : v;
+      if (av > limit) return false;
+    }
+  }
+
+  for (let i = 0; i < count; i++) {
+    const v = b[i];
+    if (v !== (v | 0)) return false;
+    if (v === 0) {
+      if (1 / v < 0) return false;
+    } else {
+      const av = v < 0 ? -v : v;
+      if (av > limit) return false;
+    }
+  }
+
+  return true;
+}
+
+function multiply2x2Typed(a, bt, n, fuse) {
   const c = new Float64Array(n * n);
   const even = n & ~1;
 
@@ -313,89 +344,176 @@ function multiply2x2Typed(a, bt, n) {
       let s11 = 0;
       let k = 0;
 
-      for (; k + 7 < n; k += 8) {
-        let x0 = a[io0 + k];
-        let x1 = a[io1 + k];
-        let y0 = bt[o0 + k];
-        let y1 = bt[o1 + k];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+      if (fuse) {
+        for (; k + 7 < n; k += 8) {
+          let x0 = a[io0 + k];
+          let x1 = a[io1 + k];
+          let y0 = bt[o0 + k];
+          let y1 = bt[o1 + k];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 1];
-        x1 = a[io1 + k + 1];
-        y0 = bt[o0 + k + 1];
-        y1 = bt[o1 + k + 1];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 1];
+          x1 = a[io1 + k + 1];
+          y0 = bt[o0 + k + 1];
+          y1 = bt[o1 + k + 1];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 2];
-        x1 = a[io1 + k + 2];
-        y0 = bt[o0 + k + 2];
-        y1 = bt[o1 + k + 2];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 2];
+          x1 = a[io1 + k + 2];
+          y0 = bt[o0 + k + 2];
+          y1 = bt[o1 + k + 2];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 3];
-        x1 = a[io1 + k + 3];
-        y0 = bt[o0 + k + 3];
-        y1 = bt[o1 + k + 3];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 3];
+          x1 = a[io1 + k + 3];
+          y0 = bt[o0 + k + 3];
+          y1 = bt[o1 + k + 3];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 4];
-        x1 = a[io1 + k + 4];
-        y0 = bt[o0 + k + 4];
-        y1 = bt[o1 + k + 4];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 4];
+          x1 = a[io1 + k + 4];
+          y0 = bt[o0 + k + 4];
+          y1 = bt[o1 + k + 4];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 5];
-        x1 = a[io1 + k + 5];
-        y0 = bt[o0 + k + 5];
-        y1 = bt[o1 + k + 5];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 5];
+          x1 = a[io1 + k + 5];
+          y0 = bt[o0 + k + 5];
+          y1 = bt[o1 + k + 5];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 6];
-        x1 = a[io1 + k + 6];
-        y0 = bt[o0 + k + 6];
-        y1 = bt[o1 + k + 6];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 6];
+          x1 = a[io1 + k + 6];
+          y0 = bt[o0 + k + 6];
+          y1 = bt[o1 + k + 6];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 7];
-        x1 = a[io1 + k + 7];
-        y0 = bt[o0 + k + 7];
-        y1 = bt[o1 + k + 7];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
-      }
+          x0 = a[io0 + k + 7];
+          x1 = a[io1 + k + 7];
+          y0 = bt[o0 + k + 7];
+          y1 = bt[o1 + k + 7];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
+        }
 
-      for (; k < n; k++) {
-        const x0 = a[io0 + k];
-        const x1 = a[io1 + k];
-        const y0 = bt[o0 + k];
-        const y1 = bt[o1 + k];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+        for (; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y0 = bt[o0 + k];
+          const y1 = bt[o1 + k];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
+        }
+      } else {
+        for (; k + 7 < n; k += 8) {
+          let x0 = a[io0 + k];
+          let x1 = a[io1 + k];
+          let y0 = bt[o0 + k];
+          let y1 = bt[o1 + k];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 1];
+          x1 = a[io1 + k + 1];
+          y0 = bt[o0 + k + 1];
+          y1 = bt[o1 + k + 1];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 2];
+          x1 = a[io1 + k + 2];
+          y0 = bt[o0 + k + 2];
+          y1 = bt[o1 + k + 2];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 3];
+          x1 = a[io1 + k + 3];
+          y0 = bt[o0 + k + 3];
+          y1 = bt[o1 + k + 3];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 4];
+          x1 = a[io1 + k + 4];
+          y0 = bt[o0 + k + 4];
+          y1 = bt[o1 + k + 4];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 5];
+          x1 = a[io1 + k + 5];
+          y0 = bt[o0 + k + 5];
+          y1 = bt[o1 + k + 5];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 6];
+          x1 = a[io1 + k + 6];
+          y0 = bt[o0 + k + 6];
+          y1 = bt[o1 + k + 6];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 7];
+          x1 = a[io1 + k + 7];
+          y0 = bt[o0 + k + 7];
+          y1 = bt[o1 + k + 7];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+        }
+
+        for (; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y0 = bt[o0 + k];
+          const y1 = bt[o1 + k];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+        }
       }
 
       const oj = io0 + j;
@@ -409,35 +527,61 @@ function multiply2x2Typed(a, bt, n) {
   if ((n & 1) !== 0) {
     const last = even;
     const oo = last * n;
-    for (let i = 0; i < even; i += 2) {
-      const io0 = i * n;
-      const io1 = io0 + n;
-      let s0 = 0;
-      let s1 = 0;
-      for (let k = 0; k < n; k++) {
-        const x0 = a[io0 + k];
-        const x1 = a[io1 + k];
-        const y = bt[oo + k];
-        s0 += x0 * y;
-        s1 += x1 * y;
-      }
-      c[io0 + last] = s0;
-      c[io1 + last] = s1;
-    }
-
     const lo = last * n;
-    for (let j = 0; j < n; j++) {
-      const oj = j * n;
-      let s = 0;
-      for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
-      c[lo + j] = s;
+
+    if (fuse) {
+      for (let i = 0; i < even; i += 2) {
+        const io0 = i * n;
+        const io1 = io0 + n;
+        let s0 = 0;
+        let s1 = 0;
+        for (let k = 0; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y = bt[oo + k];
+          s0 = Math.fma(x0, y, s0);
+          s1 = Math.fma(x1, y, s1);
+        }
+        c[io0 + last] = s0;
+        c[io1 + last] = s1;
+      }
+
+      for (let j = 0; j < n; j++) {
+        const oj = j * n;
+        let s = 0;
+        for (let k = 0; k < n; k++) s = Math.fma(a[lo + k], bt[oj + k], s);
+        c[lo + j] = s;
+      }
+    } else {
+      for (let i = 0; i < even; i += 2) {
+        const io0 = i * n;
+        const io1 = io0 + n;
+        let s0 = 0;
+        let s1 = 0;
+        for (let k = 0; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y = bt[oo + k];
+          s0 += x0 * y;
+          s1 += x1 * y;
+        }
+        c[io0 + last] = s0;
+        c[io1 + last] = s1;
+      }
+
+      for (let j = 0; j < n; j++) {
+        const oj = j * n;
+        let s = 0;
+        for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
+        c[lo + j] = s;
+      }
     }
   }
 
   return c;
 }
 
-function multiply2x2Plain(a, bt, n) {
+function multiply2x2Plain(a, bt, n, fuse) {
   const c = new Float64Array(n * n);
   const even = n & ~1;
 
@@ -453,89 +597,176 @@ function multiply2x2Plain(a, bt, n) {
       let s11 = 0;
       let k = 0;
 
-      for (; k + 7 < n; k += 8) {
-        let x0 = a[io0 + k];
-        let x1 = a[io1 + k];
-        let y0 = bt[o0 + k];
-        let y1 = bt[o1 + k];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+      if (fuse) {
+        for (; k + 7 < n; k += 8) {
+          let x0 = a[io0 + k];
+          let x1 = a[io1 + k];
+          let y0 = bt[o0 + k];
+          let y1 = bt[o1 + k];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 1];
-        x1 = a[io1 + k + 1];
-        y0 = bt[o0 + k + 1];
-        y1 = bt[o1 + k + 1];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 1];
+          x1 = a[io1 + k + 1];
+          y0 = bt[o0 + k + 1];
+          y1 = bt[o1 + k + 1];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 2];
-        x1 = a[io1 + k + 2];
-        y0 = bt[o0 + k + 2];
-        y1 = bt[o1 + k + 2];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 2];
+          x1 = a[io1 + k + 2];
+          y0 = bt[o0 + k + 2];
+          y1 = bt[o1 + k + 2];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 3];
-        x1 = a[io1 + k + 3];
-        y0 = bt[o0 + k + 3];
-        y1 = bt[o1 + k + 3];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 3];
+          x1 = a[io1 + k + 3];
+          y0 = bt[o0 + k + 3];
+          y1 = bt[o1 + k + 3];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 4];
-        x1 = a[io1 + k + 4];
-        y0 = bt[o0 + k + 4];
-        y1 = bt[o1 + k + 4];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 4];
+          x1 = a[io1 + k + 4];
+          y0 = bt[o0 + k + 4];
+          y1 = bt[o1 + k + 4];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 5];
-        x1 = a[io1 + k + 5];
-        y0 = bt[o0 + k + 5];
-        y1 = bt[o1 + k + 5];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 5];
+          x1 = a[io1 + k + 5];
+          y0 = bt[o0 + k + 5];
+          y1 = bt[o1 + k + 5];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 6];
-        x1 = a[io1 + k + 6];
-        y0 = bt[o0 + k + 6];
-        y1 = bt[o1 + k + 6];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+          x0 = a[io0 + k + 6];
+          x1 = a[io1 + k + 6];
+          y0 = bt[o0 + k + 6];
+          y1 = bt[o1 + k + 6];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
 
-        x0 = a[io0 + k + 7];
-        x1 = a[io1 + k + 7];
-        y0 = bt[o0 + k + 7];
-        y1 = bt[o1 + k + 7];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
-      }
+          x0 = a[io0 + k + 7];
+          x1 = a[io1 + k + 7];
+          y0 = bt[o0 + k + 7];
+          y1 = bt[o1 + k + 7];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
+        }
 
-      for (; k < n; k++) {
-        const x0 = a[io0 + k];
-        const x1 = a[io1 + k];
-        const y0 = bt[o0 + k];
-        const y1 = bt[o1 + k];
-        s00 += x0 * y0;
-        s01 += x0 * y1;
-        s10 += x1 * y0;
-        s11 += x1 * y1;
+        for (; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y0 = bt[o0 + k];
+          const y1 = bt[o1 + k];
+          s00 = Math.fma(x0, y0, s00);
+          s01 = Math.fma(x0, y1, s01);
+          s10 = Math.fma(x1, y0, s10);
+          s11 = Math.fma(x1, y1, s11);
+        }
+      } else {
+        for (; k + 7 < n; k += 8) {
+          let x0 = a[io0 + k];
+          let x1 = a[io1 + k];
+          let y0 = bt[o0 + k];
+          let y1 = bt[o1 + k];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 1];
+          x1 = a[io1 + k + 1];
+          y0 = bt[o0 + k + 1];
+          y1 = bt[o1 + k + 1];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 2];
+          x1 = a[io1 + k + 2];
+          y0 = bt[o0 + k + 2];
+          y1 = bt[o1 + k + 2];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 3];
+          x1 = a[io1 + k + 3];
+          y0 = bt[o0 + k + 3];
+          y1 = bt[o1 + k + 3];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 4];
+          x1 = a[io1 + k + 4];
+          y0 = bt[o0 + k + 4];
+          y1 = bt[o1 + k + 4];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 5];
+          x1 = a[io1 + k + 5];
+          y0 = bt[o0 + k + 5];
+          y1 = bt[o1 + k + 5];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 6];
+          x1 = a[io1 + k + 6];
+          y0 = bt[o0 + k + 6];
+          y1 = bt[o1 + k + 6];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+
+          x0 = a[io0 + k + 7];
+          x1 = a[io1 + k + 7];
+          y0 = bt[o0 + k + 7];
+          y1 = bt[o1 + k + 7];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+        }
+
+        for (; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y0 = bt[o0 + k];
+          const y1 = bt[o1 + k];
+          s00 += x0 * y0;
+          s01 += x0 * y1;
+          s10 += x1 * y0;
+          s11 += x1 * y1;
+        }
       }
 
       const oj = io0 + j;
@@ -549,28 +780,54 @@ function multiply2x2Plain(a, bt, n) {
   if ((n & 1) !== 0) {
     const last = even;
     const oo = last * n;
-    for (let i = 0; i < even; i += 2) {
-      const io0 = i * n;
-      const io1 = io0 + n;
-      let s0 = 0;
-      let s1 = 0;
-      for (let k = 0; k < n; k++) {
-        const x0 = a[io0 + k];
-        const x1 = a[io1 + k];
-        const y = bt[oo + k];
-        s0 += x0 * y;
-        s1 += x1 * y;
-      }
-      c[io0 + last] = s0;
-      c[io1 + last] = s1;
-    }
-
     const lo = last * n;
-    for (let j = 0; j < n; j++) {
-      const oj = j * n;
-      let s = 0;
-      for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
-      c[lo + j] = s;
+
+    if (fuse) {
+      for (let i = 0; i < even; i += 2) {
+        const io0 = i * n;
+        const io1 = io0 + n;
+        let s0 = 0;
+        let s1 = 0;
+        for (let k = 0; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y = bt[oo + k];
+          s0 = Math.fma(x0, y, s0);
+          s1 = Math.fma(x1, y, s1);
+        }
+        c[io0 + last] = s0;
+        c[io1 + last] = s1;
+      }
+
+      for (let j = 0; j < n; j++) {
+        const oj = j * n;
+        let s = 0;
+        for (let k = 0; k < n; k++) s = Math.fma(a[lo + k], bt[oj + k], s);
+        c[lo + j] = s;
+      }
+    } else {
+      for (let i = 0; i < even; i += 2) {
+        const io0 = i * n;
+        const io1 = io0 + n;
+        let s0 = 0;
+        let s1 = 0;
+        for (let k = 0; k < n; k++) {
+          const x0 = a[io0 + k];
+          const x1 = a[io1 + k];
+          const y = bt[oo + k];
+          s0 += x0 * y;
+          s1 += x1 * y;
+        }
+        c[io0 + last] = s0;
+        c[io1 + last] = s1;
+      }
+
+      for (let j = 0; j < n; j++) {
+        const oj = j * n;
+        let s = 0;
+        for (let k = 0; k < n; k++) s += a[lo + k] * bt[oj + k];
+        c[lo + j] = s;
+      }
     }
   }
 
