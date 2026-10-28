@@ -3542,14 +3542,14 @@
     },
     {
       "ts": "2026-10-24T04:53:48.033Z",
-      "last_ts": "2026-10-26T13:24:02.324Z",
+      "last_ts": "2026-10-28T05:53:57.163Z",
       "status": "failed",
       "stage": "propose",
       "reason": "job ① propose failure — see the run log",
-      "count": 3,
+      "count": 4,
       "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40063528303",
-      "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40328722140"
+      "last_run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40640395794"
     }
   ],
-  "last_heartbeat_commit": "2026-10-26T13:24:02.324Z"
+  "last_heartbeat_commit": "2026-10-28T05:53:57.163Z"
 }
