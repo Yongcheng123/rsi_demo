@@ -4004,6 +4004,179 @@
       "notes_changed": false,
       "stall_after": 2,
       "p_meta_after": 0.4
+    },
+    {
+      "gen": 23,
+      "ts": "2026-10-29T22:55:52.791Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 46.6369× vs champion 51.6264× (needs > 54.208×, i.e. +5%)",
+      "delta": -0.0966,
+      "candidate": {
+        "score": 46.6369,
+        "score_train": 34.238,
+        "correct": true,
+        "noise_pct": 42.56,
+        "bytes": 22893,
+        "tasks": {
+          "topK": {
+            "speedup": 50.5356,
+            "speedup_train": 20.0128,
+            "us": 30.8,
+            "base_us": 1479.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 53.7299,
+            "speedup_train": 83.0497,
+            "us": 81.9,
+            "base_us": 4412.7,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 92.3339,
+            "speedup_train": 62.5804,
+            "us": 55.1,
+            "base_us": 4630.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 165.607,
+            "speedup_train": 113.901,
+            "us": 81.5,
+            "base_us": 13489.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 24.6388,
+            "speedup_train": 16.1771,
+            "us": 1337.4,
+            "base_us": 33873,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 504.306,
+            "speedup_train": 465.3587,
+            "us": 24.1,
+            "base_us": 12377.1,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.8507,
+            "speedup_train": 2.7587,
+            "us": 613.9,
+            "base_us": 2340,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 11.2651,
+            "speedup_train": 7.6747,
+            "us": 1732.6,
+            "base_us": 19594.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 51.6264,
+        "score_train": 39.5601,
+        "correct": true,
+        "noise_pct": 80.17,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 46.0803,
+            "speedup_train": 19.951,
+            "us": 35.6,
+            "base_us": 1490.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 52.7317,
+            "speedup_train": 83.6119,
+            "us": 83.5,
+            "base_us": 4388.1,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 93.476,
+            "speedup_train": 60.8455,
+            "us": 54.4,
+            "base_us": 4747,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 164.2676,
+            "speedup_train": 113.3524,
+            "us": 81.4,
+            "base_us": 13478.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.5633,
+            "speedup_train": 16.5084,
+            "us": 1360.3,
+            "base_us": 34247.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 494.8299,
+            "speedup_train": 450.6687,
+            "us": 25.1,
+            "base_us": 12422.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.6471,
+            "speedup_train": 2.769,
+            "us": 574.7,
+            "base_us": 2298,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 29.3169,
+            "speedup_train": 25.3089,
+            "us": 669.4,
+            "base_us": 19627.5,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 42.56,
+      "seed": 2314008270,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 84222,
+      "usage": {
+        "input_tokens": 15208,
+        "output_tokens": 32638,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "Generation 23 leaves the seven proven champion functions unchanged and replaces only the prime sieve with a compressed 210-wheel implementation that omits multiples of 3, 5, and 7 from both marking and scanning. At the upper holdout scale this reduces composite writes from roughly 391,000 to 110,000 and candidate scans from 250,000 to about 114,000 while preserving exact ascending output through a complete smallest-prime-factor marking argument. The projected prime-task gain is sufficient to raise the aggregate by more than 5%, so this focused candidate should be accepted if the measured wheel speedup remains above the required roughly 1.48× factor.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40968713934",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 3,
+      "p_meta_after": 0.5
     }
   ],
   "runs": [
