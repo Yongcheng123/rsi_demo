@@ -3824,6 +3824,186 @@
       "notes_changed": false,
       "stall_after": 1,
       "p_meta_after": 0.3
+    },
+    {
+      "gen": 22,
+      "ts": "2026-10-29T13:25:27.106Z",
+      "type": "L0",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...) (+8 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 79.26,
+        "bytes": 23650,
+        "tasks": {
+          "topK": {
+            "speedup": 38.6183,
+            "speedup_train": 20.1223,
+            "us": 41,
+            "base_us": 1556.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 54.1689,
+            "speedup_train": 82.7877,
+            "us": 80.8,
+            "base_us": 4345.7,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 96.6653,
+            "speedup_train": 60.6703,
+            "us": 56.7,
+            "base_us": 4923,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 165.6709,
+            "speedup_train": 114.2141,
+            "us": 85,
+            "base_us": 14106.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 27.7919,
+            "speedup_train": 21.8412,
+            "us": 1183.6,
+            "base_us": 33615.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 531.157,
+            "speedup_train": 460.2448,
+            "us": 23.3,
+            "base_us": 12401.9,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.8997,
+            "speedup_train": 2.7502,
+            "us": 540.6,
+            "base_us": 2241.7,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 546.5,
+            "base_us": 19586.9,
+            "correct": false
+          }
+        },
+        "failures": [
+          "primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 50.2957,
+        "score_train": 40.837,
+        "correct": true,
+        "noise_pct": 98.05,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 28.9624,
+            "speedup_train": 20.122,
+            "us": 41.5,
+            "base_us": 1494.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 53.2934,
+            "speedup_train": 83.7017,
+            "us": 85.2,
+            "base_us": 4535.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 94.9663,
+            "speedup_train": 60.1545,
+            "us": 54.6,
+            "base_us": 4704,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.8785,
+            "speedup_train": 114.0299,
+            "us": 82,
+            "base_us": 13979,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 29.6779,
+            "speedup_train": 20.5425,
+            "us": 1149.1,
+            "base_us": 33383.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 506.2909,
+            "speedup_train": 462.0013,
+            "us": 24.3,
+            "base_us": 12390.6,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.7109,
+            "speedup_train": 2.7375,
+            "us": 585.4,
+            "base_us": 2268.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 30.5727,
+            "speedup_train": 25.7686,
+            "us": 638.8,
+            "base_us": 19599.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 79.26,
+      "seed": 2225100516,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 83576,
+      "usage": {
+        "input_tokens": 14746,
+        "output_tokens": 49803,
+        "cache_read": 128,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 1
+      },
+      "summary": "Generation 22 leaves the seven proven functions unchanged and focuses on the relatively slow prime task: it replaces repeated small-prime marking and full odd-candidate scanning with an aligned periodic pre-sieve and sparse residue scan, while retaining constant-stride base-prime marking and adding preallocated output. The projected reduction from roughly 411,000 composite writes plus 250,000 scans to roughly 219,000 writes plus 104,000 scans should provide enough prime-task gain to clear the required aggregate improvement, with prime-square, segment-boundary, and small-input correctness covered by construction.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/40879806180",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 2,
+      "p_meta_after": 0.4
     }
   ],
   "runs": [
