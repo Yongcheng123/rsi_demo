@@ -5226,6 +5226,179 @@
       "notes_changed": false,
       "stall_after": 9,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 30,
+      "ts": "2026-11-04T20:06:35.132Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 52.5037× vs champion 55.5023× (needs > 58.277×, i.e. +5%)",
+      "delta": -0.054,
+      "candidate": {
+        "score": 52.5037,
+        "score_train": 38.2199,
+        "correct": true,
+        "noise_pct": 49.18,
+        "bytes": 22777,
+        "tasks": {
+          "topK": {
+            "speedup": 34.8353,
+            "speedup_train": 18.9379,
+            "us": 69.6,
+            "base_us": 2483.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 74.6007,
+            "speedup_train": 84.2394,
+            "us": 169.2,
+            "base_us": 12623,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 124.9331,
+            "speedup_train": 77.6122,
+            "us": 88.5,
+            "base_us": 9858.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 260.0418,
+            "speedup_train": 173.0986,
+            "us": 104.5,
+            "base_us": 27129.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 21.5833,
+            "speedup_train": 15.3129,
+            "us": 2842.5,
+            "base_us": 60028.1,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 314.218,
+            "speedup_train": 242.8941,
+            "us": 57,
+            "base_us": 17720.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4405,
+            "speedup_train": 2.8984,
+            "us": 868.9,
+            "base_us": 4316.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 22.7117,
+            "speedup_train": 19.7066,
+            "us": 1156.3,
+            "base_us": 27215.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 55.5023,
+        "score_train": 39.5739,
+        "correct": true,
+        "noise_pct": 30.54,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 37.4359,
+            "speedup_train": 18.6702,
+            "us": 66,
+            "base_us": 2478.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 74.2138,
+            "speedup_train": 82.4084,
+            "us": 166.6,
+            "base_us": 12567.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 124.3527,
+            "speedup_train": 73.7507,
+            "us": 88.1,
+            "base_us": 9909,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.1125,
+            "speedup_train": 173.6754,
+            "us": 104.2,
+            "base_us": 27187.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 29.4126,
+            "speedup_train": 20.9104,
+            "us": 2016.6,
+            "base_us": 59489.1,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 313.7338,
+            "speedup_train": 254.9638,
+            "us": 55.8,
+            "base_us": 17689.9,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.7223,
+            "speedup_train": 2.8943,
+            "us": 888.6,
+            "base_us": 4312.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.0842,
+            "speedup_train": 19.7813,
+            "us": 1166.1,
+            "base_us": 27201.5,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 49.18,
+      "seed": 3246159464,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 147458,
+      "usage": {
+        "input_tokens": 19342,
+        "output_tokens": 78819,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only `wordFreqTopK`, retaining the other seven functions unchanged. The new path avoids empty split tokens, uses a prototype-safe object-backed stable-ID dictionary with a lazy Map fallback for special property names, packs counts in a Uint32Array, and selects results through count buckets that allocate only returned rows and sort words only within equal-count groups. This preserves exact whitespace, frequency, count-descending, and word-ascending semantics while removing several Map, comparator, and allocation costs; the expected word-task gain is large enough to target the required aggregate improvement above 51.6×.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/41900865128",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 10,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
