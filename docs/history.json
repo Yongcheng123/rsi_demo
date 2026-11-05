@@ -5399,6 +5399,179 @@
       "notes_changed": false,
       "stall_after": 10,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 31,
+      "ts": "2026-11-05T07:27:55.257Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 45.3769× vs champion 58.3673× (needs > 61.286×, i.e. +5%)",
+      "delta": -0.2226,
+      "candidate": {
+        "score": 45.3769,
+        "score_train": 32.7824,
+        "correct": true,
+        "noise_pct": 42.72,
+        "bytes": 25114,
+        "tasks": {
+          "topK": {
+            "speedup": 38.0703,
+            "speedup_train": 21.5484,
+            "us": 57.3,
+            "base_us": 2479.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 82.4709,
+            "speedup_train": 92.3064,
+            "us": 152.5,
+            "base_us": 12557.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 132.6081,
+            "speedup_train": 81.4752,
+            "us": 86.7,
+            "base_us": 10124.3,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.1298,
+            "speedup_train": 174.2368,
+            "us": 103.8,
+            "base_us": 27151.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 3.9166,
+            "speedup_train": 2.8899,
+            "us": 15100.7,
+            "base_us": 59301.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 372.1992,
+            "speedup_train": 276.4999,
+            "us": 47.5,
+            "base_us": 17672.1,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.6857,
+            "speedup_train": 2.9072,
+            "us": 879.5,
+            "base_us": 4338.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.2048,
+            "speedup_train": 20.3352,
+            "us": 1107.9,
+            "base_us": 27133.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 58.3673,
+        "score_train": 41.399,
+        "correct": true,
+        "noise_pct": 43.54,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 35.6304,
+            "speedup_train": 18.7696,
+            "us": 59.5,
+            "base_us": 2466.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 82.6683,
+            "speedup_train": 91.1803,
+            "us": 151.9,
+            "base_us": 12543.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 132.6595,
+            "speedup_train": 80.6883,
+            "us": 87.1,
+            "base_us": 10192.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 257.6209,
+            "speedup_train": 173.6986,
+            "us": 105.1,
+            "base_us": 27084.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 29.7524,
+            "speedup_train": 21.8114,
+            "us": 1812.4,
+            "base_us": 56500.5,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 364.9385,
+            "speedup_train": 276.6124,
+            "us": 46.7,
+            "base_us": 17668.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 5.1158,
+            "speedup_train": 2.8977,
+            "us": 849.8,
+            "base_us": 4299.3,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.0894,
+            "speedup_train": 20.5753,
+            "us": 1124.6,
+            "base_us": 27148.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 42.72,
+      "seed": 3329059041,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 147444,
+      "usage": {
+        "input_tokens": 41117,
+        "output_tokens": 138630,
+        "cache_read": 15104,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 3
+      },
+      "summary": "I rewrote only the two tasks with credible headroom and left the other six\nexports byte-for-byte identical to the champion: wordFreqTopK now scans the\nraw text code units once, hashes tokens with a rolling 31-multiplier, and\ncounts them in an open-addressed Int32Array table (hash/start/end/count) with\nexact code-unit span comparison for word identity, materializing only the\nwords that are actually returned and sorting each count bucket with the\ndefault string sort; the scanner reproduces the exact /\\s/ set so tokenization\nmatches split(/\\s+/) with empty tokens discarded, and the cutoff/tie logic\nmirrors the champion exactly. topK now sorts the selected values with an\nInt32Array sort when all of them are int32 (negative zero excluded), which\nkeeps identical output while removing the JS comparator overhead from the\nlargest remaining sort in that task. wordFreqTopK is the slowest absolute\ntask at 2.0 ms per call and only 29.4x, so removing the regex split, the\nper-token string allocation and the Map hashing should yield a factor well\nabove the 1.48 needed for the 5% aggregate threshold, with the topK sort\nchange as a secondary hedge.",
+      "proposal_error": null,
+      "repaired": true,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/41983764705",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 11,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
