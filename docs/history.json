@@ -6264,6 +6264,179 @@
       "notes_changed": false,
       "stall_after": 15,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 36,
+      "ts": "2026-11-09T22:37:09.060Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 51.4035× vs champion 54.2496× (needs > 56.962×, i.e. +5%)",
+      "delta": -0.0525,
+      "candidate": {
+        "score": 51.4035,
+        "score_train": 39.4379,
+        "correct": true,
+        "noise_pct": 51.34,
+        "bytes": 24838,
+        "tasks": {
+          "topK": {
+            "speedup": 35.1002,
+            "speedup_train": 18.9567,
+            "us": 62.5,
+            "base_us": 2462.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 73.5643,
+            "speedup_train": 89.3221,
+            "us": 168.2,
+            "base_us": 12517.2,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 86.3668,
+            "speedup_train": 65.6703,
+            "us": 130.2,
+            "base_us": 10750.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 259.3756,
+            "speedup_train": 174.4313,
+            "us": 104.4,
+            "base_us": 27029.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 28.8455,
+            "speedup_train": 20.7358,
+            "us": 2042.7,
+            "base_us": 59367.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 315.3904,
+            "speedup_train": 255.5013,
+            "us": 55.8,
+            "base_us": 17666.9,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9611,
+            "speedup_train": 2.9062,
+            "us": 936.9,
+            "base_us": 4310.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.3854,
+            "speedup_train": 19.5953,
+            "us": 1133.3,
+            "base_us": 27173.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 54.2496,
+        "score_train": 40.0141,
+        "correct": true,
+        "noise_pct": 28.38,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 36.4898,
+            "speedup_train": 18.4337,
+            "us": 69.4,
+            "base_us": 2485.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 78.5377,
+            "speedup_train": 87.7096,
+            "us": 160.1,
+            "base_us": 12513,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 124.9259,
+            "speedup_train": 75.7558,
+            "us": 88.3,
+            "base_us": 10760.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 257.1995,
+            "speedup_train": 173.3573,
+            "us": 104.1,
+            "base_us": 26744.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 29.0048,
+            "speedup_train": 21.1412,
+            "us": 2011,
+            "base_us": 59116.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 310.0928,
+            "speedup_train": 255.248,
+            "us": 55.6,
+            "base_us": 17660.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9293,
+            "speedup_train": 2.902,
+            "us": 921.3,
+            "base_us": 4311,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.0528,
+            "speedup_train": 19.7648,
+            "us": 1148.3,
+            "base_us": 27167.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 51.34,
+      "seed": 4057376829,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 146602,
+      "usage": {
+        "input_tokens": 19437,
+        "output_tokens": 49951,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only mergeIntervals, replacing comparator sorting and one temporary pair allocation per interval with an exactly packed start-plus-index key sorted natively in an Int32Array or Float64Array, while retaining stable tie order, exact integer bounds, direct merging for pre-sorted input, and the unchanged champion fallback for unsupported numeric forms. This directly targets mergeIntervals' 79us holdout cost without disturbing the seven stronger frozen tasks; if the typed sort is at least 1.477x faster than the champion on that task, the candidate should clear the 5% aggregate threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/42712082493",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 16,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [

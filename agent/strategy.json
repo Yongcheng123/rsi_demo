@@ -1,6 +1,6 @@
 {
   "p_meta": 0.6,
-  "stall": 15,
+  "stall": 16,
   "base_p_meta": 0.2,
   "p_meta_step": 0.1,
   "p_meta_max": 0.6,
