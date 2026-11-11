@@ -6437,6 +6437,179 @@
       "notes_changed": false,
       "stall_after": 16,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 37,
+      "ts": "2026-11-11T19:52:52.254Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 51.72× vs champion 49.6776× (needs > 52.161×, i.e. +5%)",
+      "delta": 0.0411,
+      "candidate": {
+        "score": 51.72,
+        "score_train": 40.0613,
+        "correct": true,
+        "noise_pct": 72.34,
+        "bytes": 26272,
+        "tasks": {
+          "topK": {
+            "speedup": 30.39,
+            "speedup_train": 18.9635,
+            "us": 68.2,
+            "base_us": 1939.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 69.1339,
+            "speedup_train": 82.6978,
+            "us": 124.5,
+            "base_us": 8568.7,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 122.0147,
+            "speedup_train": 85.1975,
+            "us": 71.6,
+            "base_us": 7787.6,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 296.9866,
+            "speedup_train": 195.8274,
+            "us": 92.3,
+            "base_us": 27610,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 20.962,
+            "speedup_train": 13.3645,
+            "us": 2302.1,
+            "base_us": 49715.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 334.611,
+            "speedup_train": 337.7179,
+            "us": 50.6,
+            "base_us": 17024.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.0091,
+            "speedup_train": 2.8565,
+            "us": 746.3,
+            "base_us": 3308.4,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.9151,
+            "speedup_train": 19.6675,
+            "us": 912.6,
+            "base_us": 21781.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 49.6776,
+        "score_train": 40.919,
+        "correct": true,
+        "noise_pct": 65.91,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 25.7368,
+            "speedup_train": 19.049,
+            "us": 75,
+            "base_us": 1938.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 64.1615,
+            "speedup_train": 80.7945,
+            "us": 133.8,
+            "base_us": 8938.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 110.0713,
+            "speedup_train": 86.5566,
+            "us": 71.6,
+            "base_us": 7440.4,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 292.5963,
+            "speedup_train": 196.4445,
+            "us": 92.6,
+            "base_us": 27421.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 21.9336,
+            "speedup_train": 15.3259,
+            "us": 2200.9,
+            "base_us": 50199,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 337.8731,
+            "speedup_train": 346.3356,
+            "us": 49.6,
+            "base_us": 17005.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9307,
+            "speedup_train": 2.879,
+            "us": 797.8,
+            "base_us": 3541.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.9434,
+            "speedup_train": 19.6534,
+            "us": 905.9,
+            "base_us": 21660.4,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 72.34,
+      "seed": 139752019,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "Intel(R) Xeon(R) 6973P-C"
+      },
+      "arena_ms": 110895,
+      "usage": {
+        "input_tokens": 19431,
+        "output_tokens": 56088,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "Generation 37 changes only matMul, replacing its exact-input 2×2 FMA tile with a register-sized 3×3 FMA tile while preserving the transposed-B layout, increasing-k operation order, exact fallback behavior, and dense Float64Array output. The new tile reduces tile count, input loads, and loop overhead while exposing enough independent accumulators to hide FMA latency; a projected 1.65× matrix gain would raise the aggregate from 54.25× to about 57.8×, above the 56.96× acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/43089424979",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 17,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
