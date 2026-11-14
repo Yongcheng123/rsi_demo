@@ -6610,6 +6610,179 @@
       "notes_changed": false,
       "stall_after": 17,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 38,
+      "ts": "2026-11-14T06:51:59.866Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 56.2826× vs champion 58.9044× (needs > 61.850×, i.e. +5%)",
+      "delta": -0.0445,
+      "candidate": {
+        "score": 56.2826,
+        "score_train": 41.5624,
+        "correct": true,
+        "noise_pct": 20.21,
+        "bytes": 19764,
+        "tasks": {
+          "topK": {
+            "speedup": 36.9828,
+            "speedup_train": 19.7216,
+            "us": 64.9,
+            "base_us": 2471.4,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 82.5535,
+            "speedup_train": 93.4785,
+            "us": 152.2,
+            "base_us": 12490.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 126.0893,
+            "speedup_train": 82.9173,
+            "us": 86,
+            "base_us": 10385.2,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.4419,
+            "speedup_train": 173.3097,
+            "us": 103.9,
+            "base_us": 27147.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 32.7822,
+            "speedup_train": 23.1541,
+            "us": 1880.5,
+            "base_us": 59008.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 373.4892,
+            "speedup_train": 288.3049,
+            "us": 46.1,
+            "base_us": 17676.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.411,
+            "speedup_train": 2.4556,
+            "us": 1259.9,
+            "base_us": 4299.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.9557,
+            "speedup_train": 20.5044,
+            "us": 1113.5,
+            "base_us": 27125.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 58.9044,
+        "score_train": 42.0509,
+        "correct": true,
+        "noise_pct": 52.95,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 35.9549,
+            "speedup_train": 19.0114,
+            "us": 69,
+            "base_us": 2471.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 82.2726,
+            "speedup_train": 93.2565,
+            "us": 151.5,
+            "base_us": 12549.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 128.5008,
+            "speedup_train": 80.5065,
+            "us": 86.3,
+            "base_us": 10562.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 260.6268,
+            "speedup_train": 173.6732,
+            "us": 104.4,
+            "base_us": 27101.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 32.2131,
+            "speedup_train": 23.4123,
+            "us": 1824.5,
+            "base_us": 58900.1,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 405.7142,
+            "speedup_train": 280.7186,
+            "us": 43.4,
+            "base_us": 17651.6,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.5968,
+            "speedup_train": 2.9077,
+            "us": 874.4,
+            "base_us": 4287.2,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.3517,
+            "speedup_train": 20.6385,
+            "us": 1111.7,
+            "base_us": 27089.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 20.21,
+      "seed": 617543549,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 144237,
+      "usage": {
+        "input_tokens": 19514,
+        "output_tokens": 77128,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "Generation 38 keeps the proven exact-safe matrix semantics while adding two independent summation lanes per 2×2 output, allowing eight FMA chains to hide FMA latency without adding tile register pressure; it also folds the matrix safety scan into transposition, replaces word-selection pair allocations with count buckets, and uses a direct finite-number sort for topK. These changes target the three lowest-speedup tasks while preserving fallback arithmetic and tie semantics, so the expected aggregate improvement should exceed the required 5% margin.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/43567216509",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 18,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
