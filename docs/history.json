@@ -6956,6 +6956,179 @@
       "notes_changed": false,
       "stall_after": 19,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 40,
+      "ts": "2026-11-15T19:06:02.914Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 57.7808× vs champion 56.8376× (needs > 59.679×, i.e. +5%)",
+      "delta": 0.0166,
+      "candidate": {
+        "score": 57.7808,
+        "score_train": 45.8217,
+        "correct": true,
+        "noise_pct": 74.61,
+        "bytes": 15744,
+        "tasks": {
+          "topK": {
+            "speedup": 33.5063,
+            "speedup_train": 19.7351,
+            "us": 64.4,
+            "base_us": 2016.9,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 72.7638,
+            "speedup_train": 93.9087,
+            "us": 115.6,
+            "base_us": 8558.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 134.0826,
+            "speedup_train": 79.0811,
+            "us": 72.2,
+            "base_us": 7739.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 296.6651,
+            "speedup_train": 196.9451,
+            "us": 99.4,
+            "base_us": 29473.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 24.16,
+            "speedup_train": 22.2999,
+            "us": 2133.4,
+            "base_us": 51674,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 424.1175,
+            "speedup_train": 399.0195,
+            "us": 40.5,
+            "base_us": 17846.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.8522,
+            "speedup_train": 3.4983,
+            "us": 709.2,
+            "base_us": 3458.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.7671,
+            "speedup_train": 21.6296,
+            "us": 876.6,
+            "base_us": 22797.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 56.8376,
+        "score_train": 46.5722,
+        "correct": true,
+        "noise_pct": 73.26,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 32.0194,
+            "speedup_train": 19.3982,
+            "us": 65.9,
+            "base_us": 2012.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 75.0099,
+            "speedup_train": 105.0288,
+            "us": 114.8,
+            "base_us": 8531.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 120.8745,
+            "speedup_train": 87.9604,
+            "us": 71.8,
+            "base_us": 7805.3,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 295.0115,
+            "speedup_train": 196.4992,
+            "us": 98.8,
+            "base_us": 29449.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 27.5898,
+            "speedup_train": 23.6894,
+            "us": 1760.1,
+            "base_us": 51226.5,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 432.0137,
+            "speedup_train": 406.1778,
+            "us": 41.5,
+            "base_us": 17872.1,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.1223,
+            "speedup_train": 3.0612,
+            "us": 761,
+            "base_us": 3461.7,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.8822,
+            "speedup_train": 21.3374,
+            "us": 882,
+            "base_us": 22821.4,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 74.61,
+      "seed": 799807293,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "Intel(R) Xeon(R) 6975P-C"
+      },
+      "arena_ms": 110098,
+      "usage": {
+        "input_tokens": 19783,
+        "output_tokens": 55555,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only matMul: a plain left matrix is now materialized once into a dense Float64Array and passed to the unchanged proven typed 2×2/eight-way kernel, while typed inputs retain their existing path. This directly targets the large train/holdout representation disparity and removes repeated plain-array representation overhead from the cubic kernel without changing FMA safety, arithmetic order, tails, output type, or argument immutability; a 1.65× matrix factor would project roughly 62.0× overall, above the 61.159× acceptance threshold.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/43749480253",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 20,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
