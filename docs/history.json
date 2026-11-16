@@ -7129,6 +7129,183 @@
       "notes_changed": false,
       "stall_after": 20,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 41,
+      "ts": "2026-11-16T07:01:09.440Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: wordFreqTopK: edge: [\"  x  y  x \",5] → expected [[\"x\",2],[\"y\",1]] (+2 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 22.51,
+        "bytes": 18670,
+        "tasks": {
+          "topK": {
+            "speedup": 29.0828,
+            "speedup_train": 12.622,
+            "us": 54.5,
+            "base_us": 1564.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 50.7838,
+            "speedup_train": 79.6859,
+            "us": 90.8,
+            "base_us": 4602.6,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 85.8625,
+            "speedup_train": 64.2748,
+            "us": 59.2,
+            "base_us": 4790,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.7017,
+            "speedup_train": 113.6465,
+            "us": 86.4,
+            "base_us": 13966.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 2074.9,
+            "base_us": 36635,
+            "correct": false
+          },
+          "twoSumCount": {
+            "speedup": 411.6431,
+            "speedup_train": 430.4803,
+            "us": 32.1,
+            "base_us": 13403.6,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4466,
+            "speedup_train": 3.2525,
+            "us": 543,
+            "base_us": 2429.9,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 29.5232,
+            "speedup_train": 24.5983,
+            "us": 691.8,
+            "base_us": 19996.2,
+            "correct": true
+          }
+        },
+        "failures": [
+          "wordFreqTopK: edge: [\"  x  y  x \",5] → expected [[\"x\",2],[\"y\",1]]",
+          "wordFreqTopK: edge: [\"z\\ty\\nz z\",2] → expected [[\"z\",3],[\"y\",1]]",
+          "wordFreqTopK: edge: [\"solo\",10] → expected [[\"solo\",1]]"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 47.6247,
+        "score_train": 38.1709,
+        "correct": true,
+        "noise_pct": 31.01,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 38.6754,
+            "speedup_train": 19.9378,
+            "us": 39.9,
+            "base_us": 1509.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 50.5503,
+            "speedup_train": 78.7477,
+            "us": 90.6,
+            "base_us": 4657.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 87.9683,
+            "speedup_train": 60.3755,
+            "us": 58.5,
+            "base_us": 4729.6,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 163.1599,
+            "speedup_train": 113.6298,
+            "us": 86.3,
+            "base_us": 14272.4,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 20.2787,
+            "speedup_train": 14.4438,
+            "us": 1797.8,
+            "base_us": 36734.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 425.6323,
+            "speedup_train": 426.9269,
+            "us": 30.3,
+            "base_us": 12805.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.7137,
+            "speedup_train": 2.7373,
+            "us": 619.1,
+            "base_us": 2374.7,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 29.4225,
+            "speedup_train": 24.7878,
+            "us": 703.7,
+            "base_us": 20781.4,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 22.51,
+      "seed": 868912298,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V45 96-Core Processor"
+      },
+      "arena_ms": 90396,
+      "usage": {
+        "input_tokens": 19423,
+        "output_tokens": 70403,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed three tasks: topK now selects a sampled threshold and maintains only the bounded candidates above it instead of repeatedly sifting the full heap, wordFreqTopK now buckets stable word IDs by count and avoids allocating a result pair for every vocabulary item, and matMul converts a plain left matrix once before using the previously measured faster typed kernel. The threshold path has explicit exact fallbacks for NaN, negative zero, and insufficient threshold ties, while the word ordering and matrix arithmetic semantics remain unchanged; together with the prior measured 1.177x matrix factor, these changes should clear the 5% aggregate threshold if the expected topK and word gains materialize.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/43818585258",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 21,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
