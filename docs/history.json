@@ -7306,6 +7306,186 @@
       "notes_changed": false,
       "stall_after": 21,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 42,
+      "ts": "2026-11-17T21:13:04.685Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...) (+7 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 69,
+        "bytes": 16632,
+        "tasks": {
+          "topK": {
+            "speedup": 28.7772,
+            "speedup_train": 19.4997,
+            "us": 71,
+            "base_us": 2022.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 76.1248,
+            "speedup_train": 108.7386,
+            "us": 113.1,
+            "base_us": 8671.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 139.2066,
+            "speedup_train": 86.226,
+            "us": 71.2,
+            "base_us": 7682,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 295.4917,
+            "speedup_train": 196.0754,
+            "us": 99.2,
+            "base_us": 29527.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.0779,
+            "speedup_train": 19.0865,
+            "us": 2141.4,
+            "base_us": 51308.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 405.9444,
+            "speedup_train": 393.5573,
+            "us": 44,
+            "base_us": 17936.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.5633,
+            "speedup_train": 3.3617,
+            "us": 754.5,
+            "base_us": 3462.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 771.6,
+            "base_us": 22980.4,
+            "correct": false
+          }
+        },
+        "failures": [
+          "primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 57.0143,
+        "score_train": 46.0053,
+        "correct": true,
+        "noise_pct": 16.22,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 31.6254,
+            "speedup_train": 19.6017,
+            "us": 61.3,
+            "base_us": 2007.3,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 77.6888,
+            "speedup_train": 106.5646,
+            "us": 111.7,
+            "base_us": 8656.1,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 140.0211,
+            "speedup_train": 89.6436,
+            "us": 70.9,
+            "base_us": 8486.9,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 297.3845,
+            "speedup_train": 199.4305,
+            "us": 99.1,
+            "base_us": 29498.1,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 26.0658,
+            "speedup_train": 21.3257,
+            "us": 1934.9,
+            "base_us": 51667,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 397.806,
+            "speedup_train": 402.3847,
+            "us": 44.5,
+            "base_us": 18022.6,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.2143,
+            "speedup_train": 3.0443,
+            "us": 811.2,
+            "base_us": 3519.2,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.9746,
+            "speedup_train": 20.5688,
+            "us": 914.6,
+            "base_us": 22835,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 69,
+      "seed": 1225704716,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "Intel(R) Xeon(R) 6975P-C"
+      },
+      "arena_ms": 110813,
+      "usage": {
+        "input_tokens": 19582,
+        "output_tokens": 74262,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I retained the proven arithmetic and selection semantics while removing concrete work: plain matrix operands now use the faster typed kernel through one-time materialization, word selection allocates pairs only for returned entries, and primes use a 6-wheel segmented sieve that cuts candidate and marking work by about 40 percent. The prime progression proof covers every composite while excluding primes, and the conservative projected aggregate factor is above the required 5 percent, so I expect this candidate to be both correct and competitive.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44175377676",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 22,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
