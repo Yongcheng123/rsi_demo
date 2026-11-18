@@ -7486,6 +7486,179 @@
       "notes_changed": false,
       "stall_after": 22,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 43,
+      "ts": "2026-11-18T08:00:37.033Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 51.8697× vs champion 51.2506× (needs > 53.813×, i.e. +5%)",
+      "delta": 0.0121,
+      "candidate": {
+        "score": 51.8697,
+        "score_train": 37.1559,
+        "correct": true,
+        "noise_pct": 13.87,
+        "bytes": 27981,
+        "tasks": {
+          "topK": {
+            "speedup": 37.5789,
+            "speedup_train": 10.5171,
+            "us": 54.5,
+            "base_us": 2029.9,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 66.064,
+            "speedup_train": 88.2419,
+            "us": 122.2,
+            "base_us": 8088.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 110.7016,
+            "speedup_train": 75.1295,
+            "us": 76,
+            "base_us": 7381.6,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 209.9809,
+            "speedup_train": 129.9672,
+            "us": 92.2,
+            "base_us": 18855,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 23.3758,
+            "speedup_train": 21.2637,
+            "us": 1589.6,
+            "base_us": 36092.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 334.9194,
+            "speedup_train": 283.1987,
+            "us": 44.8,
+            "base_us": 15274.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4237,
+            "speedup_train": 2.9761,
+            "us": 726.7,
+            "base_us": 3526.9,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.2166,
+            "speedup_train": 22.3682,
+            "us": 903.6,
+            "base_us": 23733.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 51.2506,
+        "score_train": 39.6734,
+        "correct": true,
+        "noise_pct": 24,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 34.4455,
+            "speedup_train": 19.5578,
+            "us": 54.7,
+            "base_us": 2025.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 64.7093,
+            "speedup_train": 88.4381,
+            "us": 124.4,
+            "base_us": 8129.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 110.0347,
+            "speedup_train": 71.7332,
+            "us": 75.4,
+            "base_us": 7397.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 208.1872,
+            "speedup_train": 127.8775,
+            "us": 91.3,
+            "base_us": 18972.4,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 23.9971,
+            "speedup_train": 20.1921,
+            "us": 1492.5,
+            "base_us": 36252.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 342.1336,
+            "speedup_train": 283.2495,
+            "us": 44.2,
+            "base_us": 15278.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.282,
+            "speedup_train": 2.982,
+            "us": 802.6,
+            "base_us": 3511.3,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.5163,
+            "speedup_train": 22.6812,
+            "us": 896.6,
+            "base_us": 23732.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 13.87,
+      "seed": 1310833018,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "arena_ms": 113990,
+      "usage": {
+        "input_tokens": 19989,
+        "output_tokens": 84885,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": null,
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44260505978",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 23,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
