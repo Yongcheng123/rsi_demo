@@ -7659,6 +7659,186 @@
       "notes_changed": false,
       "stall_after": 23,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 44,
+      "ts": "2026-11-18T20:50:49.890Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: wordFreqTopK: train: wrong output (call 0; expected [[\"egfqtbg\",45],[\"atqshoy\",40],[\"oag\",38],[\"cqll\",35],[\"niibbh\",35],[\"hxsjyh\"...) (+6 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 85.66,
+        "bytes": 24416,
+        "tasks": {
+          "topK": {
+            "speedup": 42.2205,
+            "speedup_train": 19.0731,
+            "us": 56.9,
+            "base_us": 2029.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 66.5758,
+            "speedup_train": 87.6315,
+            "us": 120.5,
+            "base_us": 8105.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 121.7786,
+            "speedup_train": 71.6534,
+            "us": 75.7,
+            "base_us": 8246.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 207.1132,
+            "speedup_train": 128.8783,
+            "us": 92.5,
+            "base_us": 19143.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 2017.3,
+            "base_us": 36548.1,
+            "correct": false
+          },
+          "twoSumCount": {
+            "speedup": 319.52,
+            "speedup_train": 282.315,
+            "us": 47.1,
+            "base_us": 15385.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.8564,
+            "speedup_train": 3.5974,
+            "us": 717.2,
+            "base_us": 3519,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.4675,
+            "speedup_train": 22.0595,
+            "us": 906.6,
+            "base_us": 23765,
+            "correct": true
+          }
+        },
+        "failures": [
+          "wordFreqTopK: train: wrong output (call 0; expected [[\"egfqtbg\",45],[\"atqshoy\",40],[\"oag\",38],[\"cqll\",35],[\"niibbh\",35],[\"hxsjyh\"...)",
+          "wordFreqTopK: train: wrong output (call 1; expected [[\"gkgnt\",47],[\"fkl\",38],[\"trm\",36],[\"dnjaqmd\",34],[\"xsmu\",34],[\"demsy\",32],[...)",
+          "wordFreqTopK: train: wrong output (call 2; expected [[\"bdyhsa\",44],[\"cmennngu\",43],[\"dkdiqm\",36],[\"gihazzbb\",36],[\"lpdb\",35],[\"mm...)",
+          "wordFreqTopK: holdout: wrong output (call 0; expected [[\"noxxygr\",49]])",
+          "wordFreqTopK: holdout: wrong output (call 1; expected [[\"ieos\",50],[\"zudh\",42],[\"mgmrs\",40],[\"ojhbdj\",37],[\"cxs\",32],[\"sdximimp\",32...)",
+          "wordFreqTopK: holdout: wrong output (call 2; expected [[\"wltsrsf\",53],[\"inmekbr\",45],[\"fqj\",39],[\"dqfcey\",37],[\"gppqaqnb\",36],[\"for...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 50.5139,
+        "score_train": 38.0066,
+        "correct": true,
+        "noise_pct": 23.46,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 37.4242,
+            "speedup_train": 19.4842,
+            "us": 54.5,
+            "base_us": 2023.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 65.4179,
+            "speedup_train": 90.307,
+            "us": 123.3,
+            "base_us": 8130.1,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 109.1487,
+            "speedup_train": 72.299,
+            "us": 76.9,
+            "base_us": 8231,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 209.9392,
+            "speedup_train": 128.3381,
+            "us": 92.4,
+            "base_us": 19176.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 21.074,
+            "speedup_train": 15.3169,
+            "us": 1780.5,
+            "base_us": 37890.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 318.5731,
+            "speedup_train": 266.5269,
+            "us": 47.6,
+            "base_us": 15309.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4315,
+            "speedup_train": 2.9727,
+            "us": 731.4,
+            "base_us": 3519.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.399,
+            "speedup_train": 21.9744,
+            "us": 908.3,
+            "base_us": 23769,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 85.66,
+      "seed": 1443510242,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "arena_ms": 115170,
+      "usage": {
+        "input_tokens": 19512,
+        "output_tokens": 62608,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "Generation 44 removes three concrete sources of work: topK now uses an exact bounded-integer histogram when applicable, word frequency selection buckets words by count and materializes only returned pairs, and plain matrix operands use the faster typed 2×2 kernel after one-time materialization. All fallback semantics, FMA safety, lexical and cutoff ordering, and untouched tasks remain unchanged; the projected 1.778 factor product is above both the 1.477 acceptance boundary and the preferred 1.65 margin.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44393183202",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 24,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
