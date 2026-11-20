@@ -8019,6 +8019,179 @@
       "notes_changed": false,
       "stall_after": 25,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 46,
+      "ts": "2026-11-20T20:45:57.771Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 47.2338× vs champion 50.8165× (needs > 53.357×, i.e. +5%)",
+      "delta": -0.0705,
+      "candidate": {
+        "score": 47.2338,
+        "score_train": 37.7275,
+        "correct": true,
+        "noise_pct": 73.51,
+        "bytes": 23294,
+        "tasks": {
+          "topK": {
+            "speedup": 26.2351,
+            "speedup_train": 20.6089,
+            "us": 71.9,
+            "base_us": 2025.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 61.9353,
+            "speedup_train": 88.4542,
+            "us": 129.6,
+            "base_us": 8113.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 117.7042,
+            "speedup_train": 69.9575,
+            "us": 77.5,
+            "base_us": 8426.2,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 208.4071,
+            "speedup_train": 127.5958,
+            "us": 92.1,
+            "base_us": 19035,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 17.4896,
+            "speedup_train": 13.5852,
+            "us": 2083.2,
+            "base_us": 36345.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 342.7624,
+            "speedup_train": 278.2315,
+            "us": 44.9,
+            "base_us": 15364.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9465,
+            "speedup_train": 2.9795,
+            "us": 796.2,
+            "base_us": 3513,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.2735,
+            "speedup_train": 22.3981,
+            "us": 891.2,
+            "base_us": 23715.6,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 50.8165,
+        "score_train": 37.8667,
+        "correct": true,
+        "noise_pct": 39.74,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 35.9609,
+            "speedup_train": 19.6262,
+            "us": 56.3,
+            "base_us": 2023.4,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 63.1084,
+            "speedup_train": 88.1538,
+            "us": 128.3,
+            "base_us": 8094.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 119.1662,
+            "speedup_train": 69.8928,
+            "us": 76.6,
+            "base_us": 8687,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 207.789,
+            "speedup_train": 127.9498,
+            "us": 92.1,
+            "base_us": 19161.2,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 19.1258,
+            "speedup_train": 14.3415,
+            "us": 1904.1,
+            "base_us": 36671,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 338.1669,
+            "speedup_train": 283.5475,
+            "us": 45.5,
+            "base_us": 15343.6,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.6357,
+            "speedup_train": 2.988,
+            "us": 760.7,
+            "base_us": 3506.9,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 26.3926,
+            "speedup_train": 22.4858,
+            "us": 892.1,
+            "base_us": 23711.9,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 73.51,
+      "seed": 1862072646,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "arena_ms": 114804,
+      "usage": {
+        "input_tokens": 19898,
+        "output_tokens": 80589,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I corrected the previously broken word-selection approach by grouping actual word strings rather than stable IDs, sorting only count groups at or above the exact cutoff, and allocating pairs only for returned words. I also replaced larger top-K final comparator sorts with native numeric typed-array sorting while preserving exceptional-value fallback behavior, and folded matrix’s B safety scan into its existing transpose pass without changing the proven arithmetic kernel. These changes remove concrete allocation, callback, and traversal work and should improve the aggregate enough to clear the 5% acceptance gate while preserving the required edge-case semantics.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44811745606",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 26,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
