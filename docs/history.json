@@ -7839,6 +7839,186 @@
       "notes_changed": false,
       "stall_after": 24,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 45,
+      "ts": "2026-11-20T07:34:44.217Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: wordFreqTopK: train: wrong output (call 0; expected [[\"egfqtbg\",45],[\"atqshoy\",40],[\"oag\",38],[\"cqll\",35],[\"niibbh\",35],[\"hxsjyh\"...) (+5 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 53.43,
+        "bytes": 22745,
+        "tasks": {
+          "topK": {
+            "speedup": 35.1915,
+            "speedup_train": 19.1931,
+            "us": 56.8,
+            "base_us": 2020.4,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 62.55,
+            "speedup_train": 88.6225,
+            "us": 128.9,
+            "base_us": 8095.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 115.4094,
+            "speedup_train": 69.8177,
+            "us": 76,
+            "base_us": 8699,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 209.5502,
+            "speedup_train": 128.4045,
+            "us": 92.5,
+            "base_us": 19167.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 2047.7,
+            "base_us": 36522,
+            "correct": false
+          },
+          "twoSumCount": {
+            "speedup": 306.7189,
+            "speedup_train": 271.9419,
+            "us": 48,
+            "base_us": 15280,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9797,
+            "speedup_train": 2.9754,
+            "us": 798.9,
+            "base_us": 3524.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.5188,
+            "speedup_train": 21.7244,
+            "us": 925.9,
+            "base_us": 23794.9,
+            "correct": true
+          }
+        },
+        "failures": [
+          "wordFreqTopK: train: wrong output (call 0; expected [[\"egfqtbg\",45],[\"atqshoy\",40],[\"oag\",38],[\"cqll\",35],[\"niibbh\",35],[\"hxsjyh\"...)",
+          "wordFreqTopK: train: wrong output (call 1; expected [[\"gkgnt\",47],[\"fkl\",38],[\"trm\",36],[\"dnjaqmd\",34],[\"xsmu\",34],[\"demsy\",32],[...)",
+          "wordFreqTopK: train: wrong output (call 2; expected [[\"bdyhsa\",44],[\"cmennngu\",43],[\"dkdiqm\",36],[\"gihazzbb\",36],[\"lpdb\",35],[\"mm...)",
+          "wordFreqTopK: holdout: wrong output (call 1; expected [[\"mnvn\",49],[\"buldk\",41],[\"naak\",35],[\"cnf\",34],[\"uoiikg\",33],[\"jzwhf\",31],[...)",
+          "wordFreqTopK: holdout: wrong output (call 2; expected [[\"hzkkilt\",48],[\"wmyh\",37],[\"diegu\",34],[\"zct\",34],[\"euhmzr\",31],[\"xci\",31],...)",
+          "wordFreqTopK: holdout: wrong output (call 3; expected [[\"cmcvcg\",48],[\"cetdvrdl\",44],[\"inzp\",40],[\"futbgz\",36],[\"bewnlif\",32],[\"dar...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 50.4337,
+        "score_train": 37.6295,
+        "correct": true,
+        "noise_pct": 38.11,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 31.0628,
+            "speedup_train": 19.3202,
+            "us": 58.7,
+            "base_us": 2030.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 65.0965,
+            "speedup_train": 89.5094,
+            "us": 123.3,
+            "base_us": 8089.8,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 115.7164,
+            "speedup_train": 70.0644,
+            "us": 76.4,
+            "base_us": 8721.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 209.2599,
+            "speedup_train": 127.6472,
+            "us": 92.5,
+            "base_us": 18994.9,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 22.5741,
+            "speedup_train": 14.1918,
+            "us": 1765.4,
+            "base_us": 36868.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 304.9287,
+            "speedup_train": 278.7528,
+            "us": 48.5,
+            "base_us": 15249.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.846,
+            "speedup_train": 2.9504,
+            "us": 736.9,
+            "base_us": 3520.4,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.627,
+            "speedup_train": 22.269,
+            "us": 919.5,
+            "base_us": 23777,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 53.43,
+      "seed": 1745217378,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 9V74 80-Core Processor"
+      },
+      "arena_ms": 116147,
+      "usage": {
+        "input_tokens": 19844,
+        "output_tokens": 45139,
+        "cache_read": 312,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only wordFreqTopK, preserving the champion’s proven tokenizer and stable-ID counter while replacing its vocabulary-wide pair allocation and callback-based ranking with exact count-cutoff selection, per-frequency groups, callback-free lexical sorting, and pair creation only for returned entries; this removes up to roughly 1,400 unnecessary pair allocations and substantial comparator work on the holdout vocabulary, while preserving count-descending and lexical tie semantics exactly.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44694890338",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 25,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
