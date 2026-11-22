@@ -8365,6 +8365,186 @@
       "notes_changed": false,
       "stall_after": 27,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 48,
+      "ts": "2026-11-22T07:08:57.104Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: matMul: train: wrong output (call 0; expected [32,43,0,47,-66,-2,-1,1,-29,67,-71,-68,20,31,60,15,19,84,-29,-55,30,-84,54,27...) (+11 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 72.75,
+        "bytes": 23442,
+        "tasks": {
+          "topK": {
+            "speedup": 32.8282,
+            "speedup_train": 19.4119,
+            "us": 65.1,
+            "base_us": 2027.1,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 75.0174,
+            "speedup_train": 94.4909,
+            "us": 118.3,
+            "base_us": 8730.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 118.4318,
+            "speedup_train": 89.0399,
+            "us": 72.8,
+            "base_us": 8215.7,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 293.1308,
+            "speedup_train": 196.4837,
+            "us": 99.3,
+            "base_us": 29390.3,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 24.4207,
+            "speedup_train": 17.1834,
+            "us": 2121.1,
+            "base_us": 51706.9,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 444.9935,
+            "speedup_train": 399.7129,
+            "us": 40.4,
+            "base_us": 18032.4,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 702.6,
+            "base_us": 3472.8,
+            "correct": false
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 863.9,
+            "base_us": 22885.4,
+            "correct": false
+          }
+        },
+        "failures": [
+          "matMul: train: wrong output (call 0; expected [32,43,0,47,-66,-2,-1,1,-29,67,-71,-68,20,31,60,15,19,84,-29,-55,30,-84,54,27...)",
+          "matMul: train: wrong output (call 1; expected [-16,29,51,10,114,-41,-2,32,74,46,16,6,-46,-17,-80,-38,-30,-36,-64,25,10,18,1...)",
+          "matMul: train: wrong output (call 2; expected [-48,11,-30,33,4,-66,6,-61,35,-61,-57,-63,-22,5,-5,61,21,-8,-87,56,34,-109,-6...)",
+          "matMul: holdout: wrong output (call 0; expected [-168,-74,-95,454,-318,236,-64,130,178,111,-196,60,-54,174,-26,-190,-270,-80,...)",
+          "matMul: holdout: wrong output (call 1; expected [-148,524,-103,61,-140,-172,-117,144,54,216,-276,-196,157,-105,553,146,147,13...)",
+          "matMul: holdout: wrong output (call 2; expected [12,-306,-713,81,34,443,131,186,142,151,599,-94,-117,-32,114,-226,373,49,-430...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 55.0407,
+        "score_train": 44.1772,
+        "correct": true,
+        "noise_pct": 75.42,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 31.765,
+            "speedup_train": 19.3249,
+            "us": 73.1,
+            "base_us": 2046.2,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 72.6423,
+            "speedup_train": 90.4881,
+            "us": 119,
+            "base_us": 8725.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 110.5677,
+            "speedup_train": 87.4903,
+            "us": 73.7,
+            "base_us": 7939.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 295.9464,
+            "speedup_train": 196.79,
+            "us": 99.1,
+            "base_us": 29439.4,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 23.6013,
+            "speedup_train": 18.5102,
+            "us": 2150.8,
+            "base_us": 51861.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 427.5105,
+            "speedup_train": 392.7886,
+            "us": 42.9,
+            "base_us": 18092.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.3176,
+            "speedup_train": 3.1086,
+            "us": 742.2,
+            "base_us": 3514.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.6074,
+            "speedup_train": 21.3192,
+            "us": 893.5,
+            "base_us": 22934.8,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 72.75,
+      "seed": 2046517612,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "Intel(R) Xeon(R) 6975P-C"
+      },
+      "arena_ms": 111828,
+      "usage": {
+        "input_tokens": 44561,
+        "output_tokens": 72860,
+        "cache_read": 15101,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 3
+      },
+      "summary": "I changed only primesUpTo, replacing its odd-only segmented sieve with an exact 30-wheel segmented sieve that scans 46.7% fewer candidate cells and performs roughly 65% fewer composite-marking writes while preserving ascending output, prime-square handling, and all other exports unchanged. I also renamed the statically forbidden local identifier `global` to `candidateIndex`, resolving the guard rejection without changing the algorithm.",
+      "proposal_error": null,
+      "repaired": true,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/44996190572",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 28,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
