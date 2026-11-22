@@ -8545,6 +8545,179 @@
       "notes_changed": false,
       "stall_after": 28,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 49,
+      "ts": "2026-11-22T20:00:11.350Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 56.486× vs champion 55.0101× (needs > 57.761×, i.e. +5%)",
+      "delta": 0.0268,
+      "candidate": {
+        "score": 56.486,
+        "score_train": 44.0343,
+        "correct": true,
+        "noise_pct": 44.51,
+        "bytes": 31211,
+        "tasks": {
+          "topK": {
+            "speedup": 35.4796,
+            "speedup_train": 20.7772,
+            "us": 69.4,
+            "base_us": 2630.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 61.3583,
+            "speedup_train": 100.2046,
+            "us": 161.3,
+            "base_us": 9983.3,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 119.0987,
+            "speedup_train": 79.135,
+            "us": 93.7,
+            "base_us": 10167.1,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 300.8213,
+            "speedup_train": 198.6059,
+            "us": 124.4,
+            "base_us": 37697.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 26.0633,
+            "speedup_train": 17.2616,
+            "us": 2406.3,
+            "base_us": 63189.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 428.448,
+            "speedup_train": 390.4151,
+            "us": 52.1,
+            "base_us": 22460.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.5842,
+            "speedup_train": 2.9486,
+            "us": 922.1,
+            "base_us": 4436.1,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.9578,
+            "speedup_train": 21.7402,
+            "us": 1110.9,
+            "base_us": 28694.5,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 55.0101,
+        "score_train": 44.6741,
+        "correct": true,
+        "noise_pct": 78.07,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 32.648,
+            "speedup_train": 20.8417,
+            "us": 74.6,
+            "base_us": 2656,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 61.6853,
+            "speedup_train": 100.5659,
+            "us": 160,
+            "base_us": 9987.2,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 113.7736,
+            "speedup_train": 82.3998,
+            "us": 93.7,
+            "base_us": 10008.2,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 300.0036,
+            "speedup_train": 199.0393,
+            "us": 125.4,
+            "base_us": 37622.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 26.364,
+            "speedup_train": 18.7925,
+            "us": 2417.7,
+            "base_us": 63646.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 404.7983,
+            "speedup_train": 386.9632,
+            "us": 54.3,
+            "base_us": 22445.8,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.4067,
+            "speedup_train": 2.9529,
+            "us": 960.6,
+            "base_us": 4425.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.9399,
+            "speedup_train": 21.4926,
+            "us": 1101.9,
+            "base_us": 28680.1,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 44.51,
+      "seed": 2113057145,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "INTEL(R) XEON(R) PLATINUM 8573C"
+      },
+      "arena_ms": 141627,
+      "usage": {
+        "input_tokens": 19804,
+        "output_tokens": 55685,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only matMul, retaining its proven layout, exactness checks, odd-size tails, output type, and non-FMA fallback while splitting each 2×2 FMA dot product into two exact even/odd partial sums. This doubles the number of independent FMA dependency chains without increasing the multiplication count, targeting the matrix task’s FMA-latency bottleneck and a required whole-call factor above 1.477 while leaving the other seven exports unchanged.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/45062730105",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 29,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
