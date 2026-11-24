@@ -8718,6 +8718,186 @@
       "notes_changed": false,
       "stall_after": 29,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 50,
+      "ts": "2026-11-24T22:44:20.948Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "incorrect: primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...) (+5 more)",
+      "delta": null,
+      "candidate": {
+        "score": 0,
+        "score_train": 0,
+        "correct": false,
+        "noise_pct": 24.82,
+        "bytes": 23174,
+        "tasks": {
+          "topK": {
+            "speedup": 40.62,
+            "speedup_train": 20.7152,
+            "us": 59,
+            "base_us": 2352.9,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 60.3999,
+            "speedup_train": 97.7229,
+            "us": 155.3,
+            "base_us": 9309.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 111.8484,
+            "speedup_train": 76.9765,
+            "us": 89.9,
+            "base_us": 9359.6,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 311.0978,
+            "speedup_train": 199.3298,
+            "us": 108.2,
+            "base_us": 33633.8,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 23.1775,
+            "speedup_train": 17.6997,
+            "us": 2289.1,
+            "base_us": 58790.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 428.1363,
+            "speedup_train": 388.4398,
+            "us": 47.5,
+            "base_us": 20561.5,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.6424,
+            "speedup_train": 2.9226,
+            "us": 866,
+            "base_us": 3948.6,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": null,
+            "speedup_train": null,
+            "us": 20355.8,
+            "base_us": 24934.5,
+            "correct": false
+          }
+        },
+        "failures": [
+          "primesUpTo: train: wrong output (call 0; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: train: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 1; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 2; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)",
+          "primesUpTo: holdout: wrong output (call 3; expected [2,3,5,7,11,13,17,19,23,29,31,37,41,43,47,53,59,61,67,71,73,79,83,89,97,101,1...)"
+        ],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 55.6067,
+        "score_train": 43.0214,
+        "correct": true,
+        "noise_pct": 22.26,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 37.5502,
+            "speedup_train": 20.5741,
+            "us": 58.9,
+            "base_us": 2364.5,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 59.5803,
+            "speedup_train": 98.7269,
+            "us": 150.1,
+            "base_us": 9160.5,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 107.8311,
+            "speedup_train": 75.2947,
+            "us": 88.6,
+            "base_us": 9367.6,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 311.6849,
+            "speedup_train": 193.4629,
+            "us": 109.7,
+            "base_us": 33645.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 25.1906,
+            "speedup_train": 17.2719,
+            "us": 2314,
+            "base_us": 58276.2,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 437.4305,
+            "speedup_train": 381.1231,
+            "us": 47.8,
+            "base_us": 20884.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.3175,
+            "speedup_train": 2.8343,
+            "us": 893.6,
+            "base_us": 4012,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 25.5541,
+            "speedup_train": 21.2568,
+            "us": 1004.7,
+            "base_us": 25657.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 24.82,
+      "seed": 2552230284,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "INTEL(R) XEON(R) PLATINUM 8573C"
+      },
+      "arena_ms": 134603,
+      "usage": {
+        "input_tokens": 19522,
+        "output_tokens": 40870,
+        "cache_read": 256,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "Generation 50 replaces the prime sieve with a boundary-correct segmented 30-wheel that scans and marks far fewer candidates, and rewrites word selection to compute an exact count cutoff, group only viable words, and allocate result pairs only for returned entries; the other six functions remain unchanged from the 55.0101× champion. Conservative paired projections of 1.50× for primes and 1.08× for words imply roughly 58.5× overall, above the 57.7606× acceptance cutoff, while explicit 2/3/5 handling and residue-sequence proofs address the prime-boundary failure that sank the earlier wheel attempt.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/45501903244",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 30,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
