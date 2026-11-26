@@ -9071,6 +9071,179 @@
       "notes_changed": false,
       "stall_after": 31,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 52,
+      "ts": "2026-11-26T08:44:34.987Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 58.403× vs champion 57.7665× (needs > 60.655×, i.e. +5%)",
+      "delta": 0.011,
+      "candidate": {
+        "score": 58.403,
+        "score_train": 41.391,
+        "correct": true,
+        "noise_pct": 86.06,
+        "bytes": 23541,
+        "tasks": {
+          "topK": {
+            "speedup": 47.7963,
+            "speedup_train": 18.7918,
+            "us": 55,
+            "base_us": 2481.9,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 83.7475,
+            "speedup_train": 88.8248,
+            "us": 154.2,
+            "base_us": 12808,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 122.2186,
+            "speedup_train": 76.3679,
+            "us": 87.9,
+            "base_us": 10478,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.6274,
+            "speedup_train": 174.6169,
+            "us": 104.3,
+            "base_us": 27121.5,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 28.5008,
+            "speedup_train": 23.5161,
+            "us": 2026.7,
+            "base_us": 59914.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 376.7997,
+            "speedup_train": 271.9515,
+            "us": 46.5,
+            "base_us": 17671.2,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 3.9846,
+            "speedup_train": 2.8881,
+            "us": 1091.6,
+            "base_us": 4304.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.7143,
+            "speedup_train": 20.9544,
+            "us": 914.3,
+            "base_us": 27179.4,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 57.7665,
+        "score_train": 41.542,
+        "correct": true,
+        "noise_pct": 36.74,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 41.9554,
+            "speedup_train": 18.9634,
+            "us": 56.1,
+            "base_us": 2479.6,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 80.1227,
+            "speedup_train": 89.734,
+            "us": 154.5,
+            "base_us": 12518.4,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 121.7438,
+            "speedup_train": 78.9897,
+            "us": 88.5,
+            "base_us": 10415.8,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.9059,
+            "speedup_train": 173.68,
+            "us": 103.2,
+            "base_us": 26906,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 32.1868,
+            "speedup_train": 26.5338,
+            "us": 1829.3,
+            "base_us": 59522.6,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 391.7316,
+            "speedup_train": 280.795,
+            "us": 46.3,
+            "base_us": 17684.3,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.3217,
+            "speedup_train": 2.888,
+            "us": 991.2,
+            "base_us": 4301.5,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 21.2298,
+            "speedup_train": 17.6571,
+            "us": 1126.7,
+            "base_us": 27214.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 86.06,
+      "seed": 2834040190,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 146502,
+      "usage": {
+        "input_tokens": 19921,
+        "output_tokens": 61381,
+        "cache_read": 313,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 2
+      },
+      "summary": "I changed only topK and primesUpTo: topK gains a guarded integer-histogram path that emits the selected values directly in descending order, while primesUpTo gains a proved compressed six-wheel sieve that scans and marks only candidates coprime to 6. The other six functions remain unchanged, and the new paths preserve duplicate counts, exact ordering, prime boundaries, output shapes, and argument immutability; the reduced prime scan/marking work and elimination of topK comparator sorting should provide enough margin for acceptance.",
+      "proposal_error": null,
+      "repaired": false,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/45783713150",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 32,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
