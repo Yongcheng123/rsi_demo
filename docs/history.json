@@ -9417,6 +9417,179 @@
       "notes_changed": false,
       "stall_after": 33,
       "p_meta_after": 0.6
+    },
+    {
+      "gen": 54,
+      "ts": "2026-11-27T08:51:18.935Z",
+      "type": "L1",
+      "provider": "openai",
+      "model": "minimax-m3",
+      "effort": "high",
+      "mock": false,
+      "accepted": false,
+      "reason": "no significant improvement: 58.5425× vs champion 61.7622× (needs > 64.850×, i.e. +5%)",
+      "delta": -0.0521,
+      "candidate": {
+        "score": 58.5425,
+        "score_train": 43.0876,
+        "correct": true,
+        "noise_pct": 22.86,
+        "bytes": 22051,
+        "tasks": {
+          "topK": {
+            "speedup": 34.8791,
+            "speedup_train": 19.0861,
+            "us": 68,
+            "base_us": 2472.7,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 82.4681,
+            "speedup_train": 93.7248,
+            "us": 150.9,
+            "base_us": 12517,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 131.2228,
+            "speedup_train": 82.3136,
+            "us": 85.9,
+            "base_us": 10698.4,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 260.7163,
+            "speedup_train": 173.9333,
+            "us": 103.5,
+            "base_us": 27022.7,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 33.4541,
+            "speedup_train": 27.053,
+            "us": 1800.8,
+            "base_us": 58787.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 384.0766,
+            "speedup_train": 287.3998,
+            "us": 45.2,
+            "base_us": 17657.1,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.5931,
+            "speedup_train": 2.9207,
+            "us": 869,
+            "base_us": 4300.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 23.7555,
+            "speedup_train": 20.4266,
+            "us": 1128.2,
+            "base_us": 27093.2,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_measured": {
+        "score": 61.7622,
+        "score_train": 42.2782,
+        "correct": true,
+        "noise_pct": 51.51,
+        "bytes": 22287,
+        "tasks": {
+          "topK": {
+            "speedup": 48.731,
+            "speedup_train": 18.9297,
+            "us": 55.2,
+            "base_us": 2467,
+            "correct": true
+          },
+          "dedupe": {
+            "speedup": 78.7572,
+            "speedup_train": 91.0612,
+            "us": 157.5,
+            "base_us": 12516.9,
+            "correct": true
+          },
+          "mergeIntervals": {
+            "speedup": 135.7071,
+            "speedup_train": 81.9823,
+            "us": 86.9,
+            "base_us": 10712.5,
+            "correct": true
+          },
+          "lis": {
+            "speedup": 261.1884,
+            "speedup_train": 174.1976,
+            "us": 103.4,
+            "base_us": 27057.6,
+            "correct": true
+          },
+          "wordFreqTopK": {
+            "speedup": 34.2709,
+            "speedup_train": 24.2518,
+            "us": 1713.2,
+            "base_us": 58930.4,
+            "correct": true
+          },
+          "twoSumCount": {
+            "speedup": 397.6596,
+            "speedup_train": 285.2825,
+            "us": 44.3,
+            "base_us": 17632.7,
+            "correct": true
+          },
+          "matMul": {
+            "speedup": 4.7068,
+            "speedup_train": 2.8986,
+            "us": 850.1,
+            "base_us": 4299.8,
+            "correct": true
+          },
+          "primesUpTo": {
+            "speedup": 24.2643,
+            "speedup_train": 20.6765,
+            "us": 1111.3,
+            "base_us": 27095.7,
+            "correct": true
+          }
+        },
+        "failures": [],
+        "violations": []
+      },
+      "champion_failed": false,
+      "noise_pct": 22.86,
+      "seed": 3018297807,
+      "runner": {
+        "node": "v20.20.2",
+        "platform": "linux",
+        "arch": "x64",
+        "cpus": 4,
+        "cpu": "AMD EPYC 7763 64-Core Processor"
+      },
+      "arena_ms": 144701,
+      "usage": {
+        "input_tokens": 44809,
+        "output_tokens": 21696,
+        "cache_read": 25088,
+        "cache_write": 0,
+        "cost_usd": 0,
+        "calls": 3
+      },
+      "summary": "This candidate changes only matMul: the left operand is now materialized once into a Float64Array when it is a plain array, so the cubic inner loop always reads doubles from a packed buffer instead of a generic holey array; the transposed-B layout, 2x2 output tile, eight-way k unrolling, increasing-k summation order, FMA safety preflight, odd-size tails, dense Float64Array output and argument immutability are all preserved, and because the materialization is a bit-for-bit copy of IEEE-754 doubles every product and partial sum is bit-identical to the champion. The previous candidate was rejected because collapsing duplicated matMul branches produced no measurable gain (54.86x vs 53.71x, needing >56.39x), which showed that pure structural work-removal is worthless here, so this generation attacks the actual remaining bottleneck — the plain-array element access path in the inner product loop. The honest projection is only about 1.23x on matMul (aggregate ~1.03x), below the 1.477x single-task threshold, so this is a low-confidence submission; if it fails, the notes recommend closing the matrix campaign and moving to a fully boundary-tested compressed-wheel prime sieve as the next lever",
+      "proposal_error": null,
+      "repaired": true,
+      "run_url": "https://github.com/Yongcheng123/rsi_demo/actions/runs/45967970767",
+      "improver_changed": false,
+      "notes_changed": false,
+      "stall_after": 34,
+      "p_meta_after": 0.6
     }
   ],
   "runs": [
